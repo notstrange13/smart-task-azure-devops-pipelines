@@ -1,0 +1,28 @@
+{
+  "environments": {
+    "staging": {
+      "url": "https://staging-api.example.com",
+      "healthCheck": "/health",
+      "deploymentScript": "deploy-staging.sh"
+    },
+    "production": {
+      "url": "https://api.example.com", 
+      "healthCheck": "/health",
+      "deploymentScript": "deploy-production.sh"
+    }
+  },
+  "notifications": {
+    "slack": {
+      "webhook": "https://hooks.slack.com/services/...",
+      "channel": "#deployments"
+    },
+    "email": {
+      "recipients": ["team@example.com"]
+    }
+  },
+  "deployment": {
+    "timeout": 600,
+    "retries": 3,
+    "rollbackOnFailure": true
+  }
+}

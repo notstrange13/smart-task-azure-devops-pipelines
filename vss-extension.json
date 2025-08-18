@@ -1,0 +1,41 @@
+{
+  "manifestVersion": 1,
+  "id": "smart-task-azure-devops-pipelines",
+  "name": "Smart Task for Azure DevOps Pipelines",
+  "version": "1.0.0",
+  "publisher": "pratikxpanda",
+  "targets": [
+    {
+      "id": "Microsoft.VisualStudio.Services"
+    }
+  ],
+  "description": "Intelligent Azure DevOps Pipeline task with contextual awareness and dynamic execution using AI",
+  "categories": [
+    "Azure Pipelines"
+  ],
+  "icons": {
+    "default": "images/extension-icon.png"
+  },
+  "files": [
+    {
+      "path": "dist",
+      "addressable": true
+    },
+    {
+      "path": "images",
+      "addressable": true
+    }
+  ],
+  "contributions": [
+    {
+      "id": "smart-task",
+      "type": "ms.vss-distributed-task.task",
+      "targets": [
+        "ms.vss-distributed-task.tasks"
+      ],
+      "properties": {
+        "name": "dist"
+      }
+    }
+  ]
+}
