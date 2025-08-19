@@ -29,10 +29,10 @@
       "defaultValue": "execution",
       "required": true,
       "options": {
-        "execution": "Execution Mode - Execute commands and set variables based on context",
-        "decision": "Decision Mode - Analyze context and make decisions for pipeline flow"
+        "execution": "Execution Mode - Execute commands and perform actions",
+        "decision": "Decision Mode - Set variables to adapt and control pipeline flow"
       },
-      "helpMarkDown": "The mode of operation: execution for active pipeline changes, decision for setting variables based on analysis"
+      "helpMarkDown": "The mode of operation: execution for running commands and performing actions, decision for setting pipeline variables to control flow"
     },
     {
       "name": "additionalContext",
