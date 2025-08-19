@@ -14,18 +14,18 @@ export class GetCommitInfoTool extends Tool {
         try {
             const sourceVersion = commitId || tl.getVariable('Build.SourceVersion');
             const repositoryId = tl.getVariable('Build.Repository.ID');
-            
+
             if (!sourceVersion || !repositoryId) {
                 return {
                     name: this.name,
                     result: null,
                     success: false,
-                    error: 'Build.SourceVersion or Build.Repository.ID not available'
+                    error: 'Build.SourceVersion or Build.Repository.ID not available',
                 };
             }
 
-                        const commitInfo = await GitClient.getCommitInfo(repositoryId, sourceVersion);
-            
+            const commitInfo = await GitClient.getCommitInfo(repositoryId, sourceVersion);
+
             return {
                 name: this.name,
                 result: {
@@ -34,17 +34,16 @@ export class GetCommitInfoTool extends Tool {
                     committer: commitInfo.committer,
                     comment: commitInfo.comment,
                     changeCounts: commitInfo.changeCounts,
-                    url: commitInfo.url
+                    url: commitInfo.url,
                 },
-                success: true
+                success: true,
             };
-
         } catch (error) {
             return {
                 name: this.name,
                 result: null,
                 success: false,
-                error: error instanceof Error ? error.message : String(error)
+                error: error instanceof Error ? error.message : String(error),
             };
         }
     }
@@ -57,24 +56,24 @@ export class GetPullRequestInfoTool extends Tool {
     name = 'get_pull_request_info';
     description = 'Get pull request information if this build is triggered by a PR';
 
-    async execute(input: string): Promise<ToolResult> {
+    async execute(_input: string): Promise<ToolResult> {
         try {
             const prId = tl.getVariable('System.PullRequest.PullRequestId');
             const repositoryId = tl.getVariable('Build.Repository.ID');
-            
+
             if (!prId) {
                 return {
                     name: this.name,
                     result: {
                         isPullRequest: false,
-                        message: 'This build is not triggered by a pull request'
+                        message: 'This build is not triggered by a pull request',
                     },
-                    success: true
+                    success: true,
                 };
             }
 
-                        const prInfo = await GitClient.getPullRequest(prId, repositoryId);
-            
+            const prInfo = await GitClient.getPullRequest(prId, repositoryId);
+
             return {
                 name: this.name,
                 result: {
@@ -86,17 +85,16 @@ export class GetPullRequestInfoTool extends Tool {
                     createdBy: prInfo.createdBy,
                     sourceRefName: prInfo.sourceRefName,
                     targetRefName: prInfo.targetRefName,
-                    mergeStatus: prInfo.mergeStatus
+                    mergeStatus: prInfo.mergeStatus,
                 },
-                success: true
+                success: true,
             };
-
         } catch (error) {
             return {
                 name: this.name,
                 result: null,
                 success: false,
-                error: error instanceof Error ? error.message : String(error)
+                error: error instanceof Error ? error.message : String(error),
             };
         }
     }
@@ -109,16 +107,16 @@ export class GetRepositoryInfoTool extends Tool {
     name = 'get_repository_info';
     description = 'Get repository information and statistics';
 
-    async execute(input: string): Promise<ToolResult> {
+    async execute(_input: string): Promise<ToolResult> {
         try {
             const repositoryId = tl.getVariable('Build.Repository.ID');
-            
+
             if (!repositoryId) {
                 throw new Error('Repository ID not available');
             }
 
-                        const repository = await GitClient.getRepository(repositoryId);
-            
+            const repository = await GitClient.getRepository(repositoryId);
+
             return {
                 name: this.name,
                 result: {
@@ -127,17 +125,16 @@ export class GetRepositoryInfoTool extends Tool {
                     url: repository.url,
                     defaultBranch: repository.defaultBranch,
                     size: repository.size,
-                    project: repository.project
+                    project: repository.project,
                 },
-                success: true
+                success: true,
             };
-
         } catch (error) {
             return {
                 name: this.name,
                 result: null,
                 success: false,
-                error: error instanceof Error ? error.message : String(error)
+                error: error instanceof Error ? error.message : String(error),
             };
         }
     }
@@ -150,33 +147,32 @@ export class GetBranchPolicyTool extends Tool {
     name = 'get_branch_policy';
     description = 'Get branch policies for the current branch';
 
-    async execute(input: string): Promise<ToolResult> {
+    async execute(_input: string): Promise<ToolResult> {
         try {
             const repositoryId = tl.getVariable('Build.Repository.ID');
             const sourceBranch = tl.getVariable('Build.SourceBranch');
-            
+
             if (!repositoryId || !sourceBranch) {
                 throw new Error('Repository ID or source branch not available');
             }
 
-                        const policies = await GitClient.getBranchPolicies(repositoryId);
-            
+            const policies = await GitClient.getBranchPolicies(repositoryId);
+
             return {
                 name: this.name,
                 result: {
                     policies: policies.value || [],
                     count: policies.count || 0,
-                    branch: sourceBranch
+                    branch: sourceBranch,
                 },
-                success: true
+                success: true,
             };
-
         } catch (error) {
             return {
                 name: this.name,
                 result: null,
                 success: false,
-                error: error instanceof Error ? error.message : String(error)
+                error: error instanceof Error ? error.message : String(error),
             };
         }
     }

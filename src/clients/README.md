@@ -17,6 +17,7 @@ clients/
 ## 🔧 Client Categories
 
 ### Base Client (`base.ts`)
+
 - **BaseAzureDevOpsClient**: Abstract base class with common functionality
   - Authentication handling
   - Base URL construction
@@ -24,6 +25,7 @@ clients/
   - Helper methods for common pipeline variables
 
 ### Build Operations (`build.ts`)
+
 - **BuildClient**: Build and artifact management
   - `getBuildInfo()`: Get detailed build information
   - `getTestResults()`: Get test results for builds
@@ -32,6 +34,7 @@ clients/
   - `getBuildWorkItems()`: Get work items associated with builds
 
 ### Git & Source Control (`git.ts`)
+
 - **GitClient**: Git repository operations
   - `getCommitInfo()`: Get commit details
   - `getCommitChanges()`: Get files changed in commits
@@ -42,6 +45,7 @@ clients/
   - `getTags()`: Get repository tags
 
 ### Pipeline Execution (`pipeline.ts`)
+
 - **PipelineClient**: Pipeline management and execution
   - `getPipelineTimeline()`: Get execution timeline and metrics
   - `getPipelineDefinition()`: Get pipeline configuration
@@ -51,6 +55,7 @@ clients/
   - `getLogContent()`: Get specific log content
 
 ### Notifications & Alerts (`notification.ts`)
+
 - **NotificationClient**: Send notifications and manage subscriptions
   - `sendTeamsNotification()`: Send Microsoft Teams messages
   - `sendSlackNotification()`: Send Slack messages
@@ -61,20 +66,26 @@ clients/
 ## 🏗️ Architecture
 
 ### Base Client Pattern
+
 All clients inherit from `BaseAzureDevOpsClient` which provides:
 
 ```typescript
 abstract class BaseAzureDevOpsClient {
-    protected static getAuthHeader(): string;
-    protected static getBaseUrl(): string;
-    protected static makeRequest(endpoint: string, method?: string, body?: any): Promise<any>;
-    protected static getBuildId(): string;
-    protected static getRepositoryId(): string;
-    protected static getSourceVersion(): string;
+  protected static getAuthHeader(): string;
+  protected static getBaseUrl(): string;
+  protected static makeRequest(
+    endpoint: string,
+    method?: string,
+    body?: any
+  ): Promise<any>;
+  protected static getBuildId(): string;
+  protected static getRepositoryId(): string;
+  protected static getSourceVersion(): string;
 }
 ```
 
 ### Client Factory
+
 Use the factory function to get all clients:
 
 ```typescript
@@ -85,6 +96,7 @@ const buildInfo = await clients.BuildClient.getBuildInfo();
 ```
 
 ### Individual Client Usage
+
 Import and use specific clients:
 
 ```typescript
@@ -114,9 +126,9 @@ tests/
 2. **Extend BaseAzureDevOpsClient**:
    ```typescript
    export class MyNewClient extends BaseAzureDevOpsClient {
-       static async myMethod(): Promise<any> {
-           return this.makeRequest('/my/endpoint');
-       }
+     static async myMethod(): Promise<any> {
+       return this.makeRequest('/my/endpoint');
+     }
    }
    ```
 3. **Export from index.ts**
@@ -137,6 +149,7 @@ const commitInfo = await GitClient.getCommitInfo();
 ```
 
 ### Individual Client Usage
+
 Import and use specific clients based on your needs:
 
 ```typescript
@@ -148,7 +161,10 @@ import { NotificationClient } from './clients/notification';
 // Use typed methods for specific operations
 const buildInfo = await BuildClient.getBuildInfo();
 const timeline = await PipelineClient.getPipelineTimeline();
-const notification = await NotificationClient.sendTeamsNotification(webhookUrl, message);
+const notification = await NotificationClient.sendTeamsNotification(
+  webhookUrl,
+  message
+);
 ```
 
 ## 🎯 Best Practices

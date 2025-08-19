@@ -14,14 +14,14 @@ export class GetEnvironmentVariableTool extends Tool {
             return {
                 name: this.name,
                 result: value || null,
-                success: true
+                success: true,
             };
         } catch (error) {
             return {
                 name: this.name,
                 result: null,
                 success: false,
-                error: error instanceof Error ? error.message : String(error)
+                error: error instanceof Error ? error.message : String(error),
             };
         }
     }
@@ -38,20 +38,20 @@ export class ExecuteCommandTool extends Tool {
         try {
             const { spawn } = require('child_process');
             const isWindows = process.platform === 'win32';
-            
+
             console.log(`Executing command: ${command}`);
             console.log(`Working directory: ${process.cwd()}`);
             console.log(`Platform: ${process.platform}`);
             console.log('Command output:');
             console.log('────────────────────────────────────────');
-            
-            return new Promise<ToolResult>((resolve) => {
+
+            return new Promise<ToolResult>(resolve => {
                 const shell = isWindows ? 'cmd' : 'sh';
                 const shellFlag = isWindows ? '/c' : '-c';
-                
+
                 const child = spawn(shell, [shellFlag, command], {
                     stdio: 'pipe',
-                    cwd: process.cwd()
+                    cwd: process.cwd(),
                 });
 
                 let stdout = '';
@@ -88,13 +88,13 @@ export class ExecuteCommandTool extends Tool {
                         stderr: stderr.trim(),
                         workingDirectory: process.cwd(),
                         platform: process.platform,
-                        executionTime: new Date().toISOString()
+                        executionTime: new Date().toISOString(),
                     };
 
                     resolve({
                         name: this.name,
                         result,
-                        success: code === 0
+                        success: code === 0,
                     });
                 });
 
@@ -110,20 +110,22 @@ export class ExecuteCommandTool extends Tool {
                             error: error.message,
                             workingDirectory: process.cwd(),
                             platform: process.platform,
-                            executionTime: new Date().toISOString()
+                            executionTime: new Date().toISOString(),
                         },
                         success: false,
-                        error: error.message
+                        error: error.message,
                     });
                 });
             });
         } catch (error) {
-            console.log(`Failed to start command execution: ${error instanceof Error ? error.message : String(error)}`);
+            console.log(
+                `Failed to start command execution: ${error instanceof Error ? error.message : String(error)}`
+            );
             return {
                 name: this.name,
                 result: null,
                 success: false,
-                error: error instanceof Error ? error.message : String(error)
+                error: error instanceof Error ? error.message : String(error),
             };
         }
     }

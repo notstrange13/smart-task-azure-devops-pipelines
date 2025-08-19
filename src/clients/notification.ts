@@ -21,17 +21,17 @@ export class NotificationClient extends BaseAzureDevOpsClient {
             recipients: recipients,
             subject: subject,
             body: body,
-            isHtml: true
+            isHtml: true,
         };
 
-        // This is a placeholder - actual implementation would depend on 
+        // This is a placeholder - actual implementation would depend on
         // the specific email service being used
         console.log('Email notification payload:', payload);
-        
-        return { 
-            success: true, 
+
+        return {
+            success: true,
             message: 'Email notification queued',
-            recipients: recipients.length 
+            recipients: recipients.length,
         };
     }
 

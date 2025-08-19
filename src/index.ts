@@ -4,15 +4,17 @@ if (process.env.NODE_ENV !== 'production') {
         const fs = require('fs');
         const path = require('path');
         const envPath = path.join(__dirname, '..', '.env');
-        
+
         if (fs.existsSync(envPath)) {
             require('dotenv').config({ override: false });
             console.log('Development mode: loaded environment variables from .env file');
         } else {
             console.log('Development mode: no .env file found, using system environment variables');
         }
-    } catch (error) {
-        console.log('Development mode: dotenv not available or error loading, using system environment variables');
+    } catch {
+        console.log(
+            'Development mode: dotenv not available or error loading, using system environment variables'
+        );
     }
 }
 
@@ -28,14 +30,14 @@ import { TaskContext, ModelType, TaskMode } from './types';
 async function run(): Promise<void> {
     try {
         console.log('Smart Task starting...');
-        
+
         // Get task inputs with fallback for development environment
         const isDevMode = process.env.NODE_ENV === 'development';
-        
+
         let prompt: string;
         let mode: TaskMode;
         let additionalContextInput: string;
-        
+
         if (isDevMode) {
             // In development, use the captured environment variables
             prompt = inputPrompt || '';
@@ -55,7 +57,10 @@ async function run(): Promise<void> {
         }
 
         if (!mode || !Object.values(TaskMode).includes(mode)) {
-            tl.setResult(tl.TaskResult.Failed, `Mode is required and must be one of: ${Object.values(TaskMode).join(', ')}`);
+            tl.setResult(
+                tl.TaskResult.Failed,
+                `Mode is required and must be one of: ${Object.values(TaskMode).join(', ')}`
+            );
             return;
         }
 
@@ -63,19 +68,24 @@ async function run(): Promise<void> {
 
         // Get model type from environment variable (defaults to Azure OpenAI)
         const modelTypeEnv = process.env.MODEL_TYPE || 'AZURE_OPENAI';
-        const modelType = ModelType[modelTypeEnv as keyof typeof ModelType] || ModelType.AZURE_OPENAI;
+        const modelType =
+            ModelType[modelTypeEnv as keyof typeof ModelType] || ModelType.AZURE_OPENAI;
 
         // Initialize model configuration based on model type
         let modelConfig: any;
-        
+
         if (modelType === ModelType.AZURE_OPENAI) {
             const azureOpenAIInstanceName = process.env.AZURE_OPENAI_INSTANCE_NAME;
             const azureOpenAIKey = process.env.AZURE_OPENAI_KEY;
             const azureOpenAIDeploymentName = process.env.AZURE_OPENAI_DEPLOYMENT_NAME;
-            const azureOpenAIApiVersion = process.env.AZURE_OPENAI_API_VERSION || '2025-01-01-preview';
+            const azureOpenAIApiVersion =
+                process.env.AZURE_OPENAI_API_VERSION || '2025-01-01-preview';
 
             if (!azureOpenAIInstanceName || !azureOpenAIKey || !azureOpenAIDeploymentName) {
-                tl.setResult(tl.TaskResult.Failed, 'Azure OpenAI configuration missing. Set AZURE_OPENAI_INSTANCE_NAME, AZURE_OPENAI_KEY, and AZURE_OPENAI_DEPLOYMENT_NAME environment variables.');
+                tl.setResult(
+                    tl.TaskResult.Failed,
+                    'Azure OpenAI configuration missing. Set AZURE_OPENAI_INSTANCE_NAME, AZURE_OPENAI_KEY, and AZURE_OPENAI_DEPLOYMENT_NAME environment variables.'
+                );
                 return;
             }
 
@@ -83,7 +93,7 @@ async function run(): Promise<void> {
                 instanceName: azureOpenAIInstanceName,
                 apiKey: azureOpenAIKey,
                 deploymentName: azureOpenAIDeploymentName,
-                apiVersion: azureOpenAIApiVersion
+                apiVersion: azureOpenAIApiVersion,
             };
         } else {
             // Future model types can be added here
@@ -96,8 +106,11 @@ async function run(): Promise<void> {
             //     }
             //     modelConfig = { apiKey: anthropicApiKey };
             // }
-            
-            tl.setResult(tl.TaskResult.Failed, `Unsupported model type: ${modelType}. Currently only AZURE_OPENAI is supported.`);
+
+            tl.setResult(
+                tl.TaskResult.Failed,
+                `Unsupported model type: ${modelType}. Currently only AZURE_OPENAI is supported.`
+            );
             return;
         }
 
@@ -105,7 +118,7 @@ async function run(): Promise<void> {
         let additionalContext: Record<string, any> = {};
         try {
             additionalContext = JSON.parse(additionalContextInput);
-        } catch (error) {
+        } catch {
             // Use empty object if parsing fails
         }
 
@@ -114,12 +127,12 @@ async function run(): Promise<void> {
             input: {
                 prompt,
                 mode,
-                additionalContext
+                additionalContext,
             },
             config: {
                 modelType,
-                modelConfig
-            }
+                modelConfig,
+            },
         };
 
         // Initialize and run the Smart Task Agent
@@ -131,9 +144,11 @@ async function run(): Promise<void> {
         } else {
             tl.setResult(tl.TaskResult.Failed, result.error || 'Smart Task failed');
         }
-
     } catch (error) {
-        tl.setResult(tl.TaskResult.Failed, `Smart Task failed: ${error instanceof Error ? error.message : String(error)}`);
+        tl.setResult(
+            tl.TaskResult.Failed,
+            `Smart Task failed: ${error instanceof Error ? error.message : String(error)}`
+        );
     }
 }
 

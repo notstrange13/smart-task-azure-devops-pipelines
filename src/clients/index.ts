@@ -24,7 +24,7 @@ export function getAllClients() {
         BuildClient,
         GitClient,
         PipelineClient,
-        NotificationClient
+        NotificationClient,
     };
 }
 
@@ -35,5 +35,5 @@ export const ClientCategories = {
     BUILD: 'Build & Testing',
     GIT: 'Git & Source Control',
     PIPELINE: 'Pipeline & Execution',
-    NOTIFICATION: 'Notifications & Alerts'
+    NOTIFICATION: 'Notifications & Alerts',
 } as const;

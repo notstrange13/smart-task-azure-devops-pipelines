@@ -1,20 +1,15 @@
 import { AzureChatOpenAI } from '@langchain/openai';
 import { HumanMessage, SystemMessage } from '@langchain/core/messages';
 import { BaseChatModel } from '@langchain/core/language_models/chat_models';
-import { StateGraph, END, START, Annotation } from '@langchain/langgraph';
-import { 
-    TaskContext, 
-    TaskResult, 
-    ModelType, 
+import { StateGraph, END } from '@langchain/langgraph';
+import {
+    TaskContext,
+    TaskResult,
+    ModelType,
     AzureOpenAIConfig,
-    TaskMode,
     TaskConfig,
-    PlanExecuteState, 
-    Plan, 
-    Response, 
-    Action, 
-    PastStep,
-    StateAnnotation
+    PlanExecuteState,
+    StateAnnotation,
 } from './types';
 import { Tool, createAllTools } from './tools/index';
 
@@ -26,7 +21,7 @@ export class Agent {
 
     constructor(taskContext: TaskContext) {
         this.taskContext = taskContext;
-        
+
         // Initialize chat model based on configuration
         this.chatModel = this.initializeChatModel(taskContext.config);
 
@@ -48,7 +43,7 @@ export class Agent {
                     azureOpenAIApiVersion: azureOpenAIConfig.apiVersion,
                     temperature: 0,
                 });
-            
+
             // Future model types can be added here:
             // case ModelType.ANTHROPIC:
             //     const anthropicConfig = config.modelConfig as AnthropicConfig;
@@ -63,7 +58,7 @@ export class Agent {
             //         model: ollamaConfig.model,
             //         temperature: 0,
             //     });
-            
+
             default:
                 throw new Error(`Unsupported model type: ${config.modelType}`);
         }
@@ -78,18 +73,18 @@ export class Agent {
         const graph = new StateGraph(StateAnnotation);
 
         // Add nodes: planner -> agent -> replan
-        graph.addNode("planner", this.planStep.bind(this));
-        graph.addNode("agent", this.executeStep.bind(this));
-        graph.addNode("replan", this.replanStep.bind(this));
+        graph.addNode('planner', this.planStep.bind(this));
+        graph.addNode('agent', this.executeStep.bind(this));
+        graph.addNode('replan', this.replanStep.bind(this));
 
         // Define graph flow with conditional routing
-        (graph as any).setEntryPoint("planner");
-        (graph as any).addEdge("planner", "agent");
-        (graph as any).addEdge("agent", "replan");
-        
+        (graph as any).setEntryPoint('planner');
+        (graph as any).addEdge('planner', 'agent');
+        (graph as any).addEdge('agent', 'replan');
+
         // Conditional edge: replan decides whether to continue or end
-        (graph as any).addConditionalEdges("replan", this.shouldContinue.bind(this), {
-            continue: "agent",
+        (graph as any).addConditionalEdges('replan', this.shouldContinue.bind(this), {
+            continue: 'agent',
             end: END,
         });
 
@@ -102,16 +97,16 @@ export class Agent {
         if (state.response) {
             return 'end';
         }
-        
+
         if (state.plan.length === 0) {
             return 'end';
         }
-        
+
         // Prevent infinite loops by checking if we've done too many steps
         if (state.past_steps.length > 10) {
             return 'end';
         }
-        
+
         return 'continue';
     }
 
@@ -122,19 +117,18 @@ export class Agent {
                 input: this.taskContext.input.prompt,
                 plan: [],
                 past_steps: [],
-                context: await this.getContext()
+                context: await this.getContext(),
             };
 
             // Execute the graph
             const finalState = await this.graph.invoke(initialState);
 
             return this.buildTaskResult(finalState);
-
         } catch (error) {
             console.error('Task execution failed:', error);
             return {
                 success: false,
-                error: error instanceof Error ? error.message : String(error)
+                error: error instanceof Error ? error.message : String(error),
             };
         }
     }
@@ -165,12 +159,14 @@ Output only a JSON object with this structure:
 
         const response = await this.chatModel.invoke([
             new SystemMessage(plannerPrompt),
-            new HumanMessage(`${state.input}\n\nAvailable context: ${JSON.stringify(state.context, null, 2)}`)
+            new HumanMessage(
+                `${state.input}\n\nAvailable context: ${JSON.stringify(state.context, null, 2)}`
+            ),
         ]);
 
         try {
             let content = response.content as string;
-            
+
             // Handle markdown-wrapped JSON
             if (content.includes('```json')) {
                 const jsonMatch = content.match(/```json\s*([\s\S]*?)\s*```/);
@@ -187,14 +183,17 @@ Output only a JSON object with this structure:
             const planData = JSON.parse(content);
             const plan = planData.steps || [];
             return { plan };
-        } catch (error) {
+        } catch {
             return { plan: ['Analyze the request and provide appropriate response'] };
         }
     }
 
     private async executeStep(state: PlanExecuteState): Promise<Partial<PlanExecuteState>> {
         if (state.plan.length === 0) {
-            const past_steps = [...state.past_steps, ['No plan available', 'Unable to execute - no plan found'] as [string, string]];
+            const past_steps = [
+                ...state.past_steps,
+                ['No plan available', 'Unable to execute - no plan found'] as [string, string],
+            ];
             return { past_steps };
         }
 
@@ -240,12 +239,10 @@ For tool-requiring steps:
 }`;
 
         try {
-            const response = await this.chatModel.invoke([
-                new SystemMessage(executionPrompt)
-            ]);
+            const response = await this.chatModel.invoke([new SystemMessage(executionPrompt)]);
 
             let content = response.content as string;
-            
+
             // Handle markdown-wrapped JSON
             if (content.includes('```json')) {
                 const jsonMatch = content.match(/```json\s*([\s\S]*?)\s*```/);
@@ -293,12 +290,14 @@ For tool-requiring steps:
             const plan = state.plan.slice(1); // Remove executed step
 
             return { past_steps, plan };
-
         } catch (error) {
             const errorResult = `Execution failed: ${error instanceof Error ? error.message : String(error)}`;
-            const past_steps = [...state.past_steps, [currentStep, errorResult] as [string, string]];
+            const past_steps = [
+                ...state.past_steps,
+                [currentStep, errorResult] as [string, string],
+            ];
             const plan = state.plan.slice(1);
-            
+
             return { past_steps, plan };
         }
     }
@@ -334,12 +333,10 @@ OR if complete, output:
 }`;
 
         try {
-            const response = await this.chatModel.invoke([
-                new SystemMessage(replannerPrompt)
-            ]);
+            const response = await this.chatModel.invoke([new SystemMessage(replannerPrompt)]);
 
             let content = response.content as string;
-            
+
             // Handle markdown-wrapped JSON
             if (content.includes('```json')) {
                 const jsonMatch = content.match(/```json\s*([\s\S]*?)\s*```/);
@@ -354,7 +351,7 @@ OR if complete, output:
             }
 
             const replanData = JSON.parse(content);
-            
+
             if (replanData.response) {
                 return { response: replanData.response };
             } else if (replanData.action && replanData.action.steps) {
@@ -363,8 +360,7 @@ OR if complete, output:
             } else {
                 return { response: 'Task completed successfully' };
             }
-
-        } catch (error) {
+        } catch {
             return { response: 'Task completed with errors during replanning' };
         }
     }
@@ -372,17 +368,18 @@ OR if complete, output:
     private async getContext(): Promise<Record<string, any>> {
         const context: Record<string, any> = {
             mode: this.taskContext.input.mode,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
         };
 
         // Collect additional context provided by user
         if (this.taskContext.input.additionalContext) {
             try {
-                const additional = typeof this.taskContext.input.additionalContext === 'string' 
-                    ? JSON.parse(this.taskContext.input.additionalContext)
-                    : this.taskContext.input.additionalContext;
+                const additional =
+                    typeof this.taskContext.input.additionalContext === 'string'
+                        ? JSON.parse(this.taskContext.input.additionalContext)
+                        : this.taskContext.input.additionalContext;
                 context.additional = additional;
-            } catch (error) {
+            } catch {
                 context.additional = this.taskContext.input.additionalContext;
             }
         }
@@ -395,14 +392,13 @@ OR if complete, output:
         if (finalState.response) {
             return {
                 success: true,
-                response: finalState.response
+                response: finalState.response,
             };
         }
-        
+
         // If no response but execution completed, return basic success
         return {
-            success: true
+            success: true,
         };
     }
-
 }

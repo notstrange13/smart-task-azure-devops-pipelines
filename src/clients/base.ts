@@ -11,7 +11,9 @@ export abstract class BaseAzureDevOpsClient {
     protected static getAuthHeader(): string {
         const accessToken = tl.getVariable('System.AccessToken');
         if (!accessToken) {
-            throw new Error('System.AccessToken not available. Ensure the task has access to the OAuth token.');
+            throw new Error(
+                'System.AccessToken not available. Ensure the task has access to the OAuth token.'
+            );
         }
         return `Bearer ${accessToken}`;
     }
@@ -35,31 +37,33 @@ export abstract class BaseAzureDevOpsClient {
      * @param body - Request body for POST/PUT requests
      */
     protected static async makeRequest(
-        endpoint: string, 
+        endpoint: string,
         method: 'GET' | 'POST' | 'PUT' | 'DELETE' = 'GET',
         body?: any
     ): Promise<any> {
         const baseUrl = this.getBaseUrl();
         const url = `${baseUrl}${endpoint}`;
-        
+
         const headers: Record<string, string> = {
-            'Authorization': this.getAuthHeader(),
-            'Content-Type': 'application/json'
+            Authorization: this.getAuthHeader(),
+            'Content-Type': 'application/json',
         };
 
         const requestInit: RequestInit = {
             method,
-            headers
+            headers,
         };
 
         if (body && (method === 'POST' || method === 'PUT')) {
             requestInit.body = JSON.stringify(body);
         }
-        
+
         const response = await fetch(url, requestInit);
 
         if (!response.ok) {
-            throw new Error(`Azure DevOps API request failed: ${response.status} ${response.statusText} - ${endpoint}`);
+            throw new Error(
+                `Azure DevOps API request failed: ${response.status} ${response.statusText} - ${endpoint}`
+            );
         }
 
         return await response.json();

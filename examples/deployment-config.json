@@ -6,7 +6,7 @@
       "deploymentScript": "deploy-staging.sh"
     },
     "production": {
-      "url": "https://api.example.com", 
+      "url": "https://api.example.com",
       "healthCheck": "/health",
       "deploymentScript": "deploy-production.sh"
     }

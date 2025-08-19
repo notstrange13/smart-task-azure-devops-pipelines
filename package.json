@@ -12,6 +12,9 @@
     "test:watch": "jest --watch",
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "format-and-lint": "npm run format && npm run lint:fix",
     "package": "tfx extension create --manifest-globs vss-extension.json",
     "clean": "rimraf dist"
   },
@@ -43,6 +46,7 @@
     "@typescript-eslint/parser": "^8.39.1",
     "eslint": "^9.33.0",
     "jest": "^30.0.5",
+    "prettier": "^3.6.2",
     "rimraf": "^6.0.1",
     "tfx-cli": "^0.21.3",
     "ts-jest": "^29.4.1",

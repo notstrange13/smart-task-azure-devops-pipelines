@@ -13,7 +13,7 @@ export class SendNotificationTool extends Tool {
     async execute(input: string): Promise<ToolResult> {
         try {
             const { recipients, subject, message, severity = 'info' } = JSON.parse(input);
-            
+
             if (!recipients || !Array.isArray(recipients) || recipients.length === 0) {
                 throw new Error('recipients array is required');
             }
@@ -30,7 +30,8 @@ export class SendNotificationTool extends Tool {
             const requestedFor = tl.getVariable('Build.RequestedFor');
 
             // Create email subject if not provided
-            const emailSubject = subject || `[${project}] Build ${buildNumber} - ${severity.toUpperCase()}`;
+            const emailSubject =
+                subject || `[${project}] Build ${buildNumber} - ${severity.toUpperCase()}`;
 
             // Create HTML email body with build context
             const emailBody = `
@@ -59,7 +60,7 @@ export class SendNotificationTool extends Tool {
             console.log(`EMAIL NOTIFICATION [${severity.toUpperCase()}]: ${message}`);
             console.log(`Recipients: ${recipients.join(', ')}`);
             console.log(`Build: ${buildNumber} (${buildId})`);
-            
+
             return {
                 name: this.name,
                 result: {
@@ -71,17 +72,16 @@ export class SendNotificationTool extends Tool {
                     buildId,
                     buildNumber,
                     project,
-                    emailResult
+                    emailResult,
                 },
-                success: true
+                success: true,
             };
-
         } catch (error) {
             return {
                 name: this.name,
                 result: null,
                 success: false,
-                error: error instanceof Error ? error.message : String(error)
+                error: error instanceof Error ? error.message : String(error),
             };
         }
     }

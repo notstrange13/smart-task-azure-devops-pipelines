@@ -16,14 +16,14 @@ export class GetPipelineVariableTool extends Tool {
             return {
                 name: this.name,
                 result: value || null,
-                success: true
+                success: true,
             };
         } catch (error) {
             return {
                 name: this.name,
                 result: null,
                 success: false,
-                error: error instanceof Error ? error.message : String(error)
+                error: error instanceof Error ? error.message : String(error),
             };
         }
     }
@@ -40,7 +40,7 @@ export class SetPipelineVariableTool extends Tool {
         try {
             // Parse input - expecting JSON with name and value
             let parsedInput;
-            
+
             // Handle case where input might already be an object
             if (typeof input === 'object' && input !== null) {
                 parsedInput = input;
@@ -55,7 +55,7 @@ export class SetPipelineVariableTool extends Tool {
                             name: this.name,
                             result: null,
                             success: false,
-                            error: 'Input must be JSON {"name": "varName", "value": "varValue"} or name=value format'
+                            error: 'Input must be JSON {"name": "varName", "value": "varValue"} or name=value format',
                         };
                     }
                     parsedInput = { name: parts[0].trim(), value: parts[1].trim() };
@@ -65,18 +65,18 @@ export class SetPipelineVariableTool extends Tool {
                     name: this.name,
                     result: null,
                     success: false,
-                    error: 'Input must be a string or object with name and value properties'
+                    error: 'Input must be a string or object with name and value properties',
                 };
             }
 
             const { name, value } = parsedInput;
-            
+
             if (!name) {
                 return {
                     name: this.name,
                     result: null,
                     success: false,
-                    error: 'Variable name is required'
+                    error: 'Variable name is required',
                 };
             }
 
@@ -84,21 +84,21 @@ export class SetPipelineVariableTool extends Tool {
 
             // Set as pipeline variable for subsequent tasks
             tl.setVariable(name, value);
-            
+
             // Also set as output variable
             tl.setVariable(name, value, false, true);
 
             return {
                 name: this.name,
                 result: { name, value },
-                success: true
+                success: true,
             };
         } catch (error) {
             return {
                 name: this.name,
                 result: null,
                 success: false,
-                error: error instanceof Error ? error.message : String(error)
+                error: error instanceof Error ? error.message : String(error),
             };
         }
     }
@@ -111,32 +111,31 @@ export class GetPipelineTimelineTool extends Tool {
     name = 'get_pipeline_timeline';
     description = 'Get pipeline execution timeline and performance metrics';
 
-    async execute(input: string): Promise<ToolResult> {
+    async execute(_input: string): Promise<ToolResult> {
         try {
             const buildId = tl.getVariable('Build.BuildId');
-            
+
             if (!buildId) {
                 throw new Error('Build ID not available');
             }
 
             const timeline = await PipelineClient.getPipelineTimeline(buildId);
-            
+
             return {
                 name: this.name,
                 result: {
                     records: timeline.records || [],
                     lastChangedBy: timeline.lastChangedBy,
-                    lastChangedOn: timeline.lastChangedOn
+                    lastChangedOn: timeline.lastChangedOn,
                 },
-                success: true
+                success: true,
             };
-
         } catch (error) {
             return {
                 name: this.name,
                 result: null,
                 success: false,
-                error: error instanceof Error ? error.message : String(error)
+                error: error instanceof Error ? error.message : String(error),
             };
         }
     }

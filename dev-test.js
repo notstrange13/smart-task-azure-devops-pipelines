@@ -29,7 +29,9 @@ if (!additionalContext) {
 
 // If still no prompt or mode, show usage
 if (!prompt || !mode) {
-    console.log('Usage: node dev-test.js "Your prompt here" [decision|execution] [additional_context_json]');
+    console.log(
+        'Usage: node dev-test.js "Your prompt here" [decision|execution] [additional_context_json]'
+    );
     console.log('');
     console.log('Alternative: Set environment variables:');
     console.log('  INPUT_PROMPT="Your prompt here"');
@@ -78,7 +80,7 @@ const childEnv = {
     NODE_ENV: 'development',
     INPUT_PROMPT: prompt,
     INPUT_MODE: mode,
-    INPUT_ADDITIONALCONTEXT: additionalContext
+    INPUT_ADDITIONALCONTEXT: additionalContext,
 };
 
 console.log('Final environment variables for child process:');
@@ -90,13 +92,13 @@ console.log('');
 
 const child = spawn('node', [scriptPath], {
     stdio: 'inherit',
-    env: childEnv
+    env: childEnv,
 });
 
-child.on('close', (code) => {
+child.on('close', code => {
     console.log(`\nSmart Task completed with exit code: ${code}`);
 });
 
-child.on('error', (error) => {
+child.on('error', error => {
     console.error(`Error running Smart Task: ${error.message}`);
 });

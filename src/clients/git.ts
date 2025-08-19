@@ -21,7 +21,9 @@ export class GitClient extends BaseAzureDevOpsClient {
      * @param commitId - Commit ID
      */
     static async getCommitChanges(repositoryId: string, commitId: string): Promise<any> {
-        return this.makeRequest(`/git/repositories/${repositoryId}/commits/${commitId}/changes?api-version=7.0`);
+        return this.makeRequest(
+            `/git/repositories/${repositoryId}/commits/${commitId}/changes?api-version=7.0`
+        );
     }
 
     /**
@@ -31,7 +33,9 @@ export class GitClient extends BaseAzureDevOpsClient {
      */
     static async getPullRequest(pullRequestId: string, repositoryId?: string): Promise<any> {
         const repoId = repositoryId || this.getRepositoryId();
-        return this.makeRequest(`/git/repositories/${repoId}/pullrequests/${pullRequestId}?api-version=7.0`);
+        return this.makeRequest(
+            `/git/repositories/${repoId}/pullrequests/${pullRequestId}?api-version=7.0`
+        );
     }
 
     /**

@@ -1,221 +1,221 @@
 # Smart Task Example Pipeline with Tool-based Context Gathering
 
 trigger:
-  branches:
-    include:
-      - main
-      - develop
-      - feature/*
+    branches:
+        include:
+            - main
+            - develop
+            - feature/*
 
 # Environment variables for secure configuration
 variables:
-  - name: AZURE_OPENAI_INSTANCE_NAME
-    value: 'your-openai-instance'  # Just the instance name, not full URL
-  - name: AZURE_OPENAI_KEY
-    value: '$(AZURE_OPENAI_API_KEY)' # Store as secret variable
-  - name: AZURE_OPENAI_DEPLOYMENT_NAME
-    value: 'gpt-4o'  # Your deployment name
+    - name: AZURE_OPENAI_INSTANCE_NAME
+      value: 'your-openai-instance' # Just the instance name, not full URL
+    - name: AZURE_OPENAI_KEY
+      value: '$(AZURE_OPENAI_API_KEY)' # Store as secret variable
+    - name: AZURE_OPENAI_DEPLOYMENT_NAME
+      value: 'gpt-4o' # Your deployment name
 
 pool:
-  vmImage: 'ubuntu-latest'
+    vmImage: 'ubuntu-latest'
 
 stages:
-- stage: SmartDecision
-  displayName: 'Smart Decision Making with Plan-Execute-Replan'
-  jobs:
-  - job: AnalyzeAndDecide
-    displayName: 'Analyze Context and Make Decisions'
-    steps:
-    - checkout: self
-      displayName: 'Checkout Source Code'
+    - stage: SmartDecision
+      displayName: 'Smart Decision Making with Plan-Execute-Replan'
+      jobs:
+          - job: AnalyzeAndDecide
+            displayName: 'Analyze Context and Make Decisions'
+            steps:
+                - checkout: self
+                  displayName: 'Checkout Source Code'
 
-    - task: SmartTask@1
-      displayName: 'Smart Task: Analyze Changes and Set Test Strategy'
-      inputs:
-        prompt: |
-          Analyze the current build context and determine:
-          1. What type of changes were made based on the source branch and build reason
-          2. Which test suites should run based on the analysis
-          3. Whether deployment is needed and to which environment
-          4. Set appropriate pipeline variables for subsequent steps
-          
-          Use tools to:
-          - Read package.json to understand the project structure
-          - Get pipeline variables to understand the build context
-          - Check if specific files exist that would indicate certain types of changes
-          - Set the following variables based on analysis:
-            * RUN_UNIT_TESTS: true/false
-            * RUN_INTEGRATION_TESTS: true/false  
-            * RUN_E2E_TESTS: true/false
-            * DEPLOY_TO_STAGING: true/false
-            * DEPLOY_TO_PROD: true/false
-            * TEST_SCOPE: 'minimal', 'standard', or 'full'
-        mode: 'decision'
-        additionalContext: |
-          {
-            "project_type": "typescript",
-            "environments": ["staging", "production"],
-            "test_types": ["unit", "integration", "e2e"],
-            "deployment_strategy": "branch_based"
-          }
+                - task: SmartTask@1
+                  displayName: 'Smart Task: Analyze Changes and Set Test Strategy'
+                  inputs:
+                      prompt: |
+                          Analyze the current build context and determine:
+                          1. What type of changes were made based on the source branch and build reason
+                          2. Which test suites should run based on the analysis
+                          3. Whether deployment is needed and to which environment
+                          4. Set appropriate pipeline variables for subsequent steps
 
-    - task: PowerShell@2
-      displayName: 'Display Smart Task Decisions'
-      inputs:
-        script: |
-          Write-Host "=== Smart Task Decisions ==="
-          Write-Host "RUN_UNIT_TESTS: $(RUN_UNIT_TESTS)"
-          Write-Host "RUN_INTEGRATION_TESTS: $(RUN_INTEGRATION_TESTS)"
-          Write-Host "RUN_E2E_TESTS: $(RUN_E2E_TESTS)"
-          Write-Host "DEPLOY_TO_STAGING: $(DEPLOY_TO_STAGING)"
-          Write-Host "DEPLOY_TO_PROD: $(DEPLOY_TO_PROD)"
-          Write-Host "TEST_SCOPE: $(TEST_SCOPE)"
+                          Use tools to:
+                          - Read package.json to understand the project structure
+                          - Get pipeline variables to understand the build context
+                          - Check if specific files exist that would indicate certain types of changes
+                          - Set the following variables based on analysis:
+                            * RUN_UNIT_TESTS: true/false
+                            * RUN_INTEGRATION_TESTS: true/false  
+                            * RUN_E2E_TESTS: true/false
+                            * DEPLOY_TO_STAGING: true/false
+                            * DEPLOY_TO_PROD: true/false
+                            * TEST_SCOPE: 'minimal', 'standard', or 'full'
+                      mode: 'decision'
+                      additionalContext: |
+                          {
+                            "project_type": "typescript",
+                            "environments": ["staging", "production"],
+                            "test_types": ["unit", "integration", "e2e"],
+                            "deployment_strategy": "branch_based"
+                          }
 
-- stage: SmartTesting
-  displayName: 'Smart Testing based on AI Decisions'
-  dependsOn: SmartDecision
-  condition: succeeded()
-  jobs:
-  - job: UnitTests
-    displayName: 'Unit Tests'
-    condition: eq(variables['RUN_UNIT_TESTS'], 'true')
-    steps:
-    - task: NodeTool@0
-      displayName: 'Use Node.js'
-      inputs:
-        versionSpec: '18.x'
+                - task: PowerShell@2
+                  displayName: 'Display Smart Task Decisions'
+                  inputs:
+                      script: |
+                          Write-Host "=== Smart Task Decisions ==="
+                          Write-Host "RUN_UNIT_TESTS: $(RUN_UNIT_TESTS)"
+                          Write-Host "RUN_INTEGRATION_TESTS: $(RUN_INTEGRATION_TESTS)"
+                          Write-Host "RUN_E2E_TESTS: $(RUN_E2E_TESTS)"
+                          Write-Host "DEPLOY_TO_STAGING: $(DEPLOY_TO_STAGING)"
+                          Write-Host "DEPLOY_TO_PROD: $(DEPLOY_TO_PROD)"
+                          Write-Host "TEST_SCOPE: $(TEST_SCOPE)"
 
-    - task: Npm@1
-      displayName: 'npm install'
-      inputs:
-        command: 'install'
+    - stage: SmartTesting
+      displayName: 'Smart Testing based on AI Decisions'
+      dependsOn: SmartDecision
+      condition: succeeded()
+      jobs:
+          - job: UnitTests
+            displayName: 'Unit Tests'
+            condition: eq(variables['RUN_UNIT_TESTS'], 'true')
+            steps:
+                - task: NodeTool@0
+                  displayName: 'Use Node.js'
+                  inputs:
+                      versionSpec: '18.x'
 
-    - task: Npm@1
-      displayName: 'Run Unit Tests'
-      inputs:
-        command: 'custom'
-        customCommand: 'test'
+                - task: Npm@1
+                  displayName: 'npm install'
+                  inputs:
+                      command: 'install'
 
-  - job: IntegrationTests
-    displayName: 'Integration Tests'
-    condition: eq(variables['RUN_INTEGRATION_TESTS'], 'true')
-    steps:
-    - task: NodeTool@0
-      displayName: 'Use Node.js'
-      inputs:
-        versionSpec: '18.x'
+                - task: Npm@1
+                  displayName: 'Run Unit Tests'
+                  inputs:
+                      command: 'custom'
+                      customCommand: 'test'
 
-    - task: Npm@1
-      displayName: 'npm install'
-      inputs:
-        command: 'install'
+          - job: IntegrationTests
+            displayName: 'Integration Tests'
+            condition: eq(variables['RUN_INTEGRATION_TESTS'], 'true')
+            steps:
+                - task: NodeTool@0
+                  displayName: 'Use Node.js'
+                  inputs:
+                      versionSpec: '18.x'
 
-    - task: Npm@1
-      displayName: 'Run Integration Tests'
-      inputs:
-        command: 'custom'
-        customCommand: 'run test:integration'
+                - task: Npm@1
+                  displayName: 'npm install'
+                  inputs:
+                      command: 'install'
 
-  - job: E2ETests
-    displayName: 'End-to-End Tests'
-    condition: eq(variables['RUN_E2E_TESTS'], 'true')
-    steps:
-    - task: NodeTool@0
-      displayName: 'Use Node.js'
-      inputs:
-        versionSpec: '18.x'
+                - task: Npm@1
+                  displayName: 'Run Integration Tests'
+                  inputs:
+                      command: 'custom'
+                      customCommand: 'run test:integration'
 
-    - task: Npm@1
-      displayName: 'npm install'
-      inputs:
-        command: 'install'
+          - job: E2ETests
+            displayName: 'End-to-End Tests'
+            condition: eq(variables['RUN_E2E_TESTS'], 'true')
+            steps:
+                - task: NodeTool@0
+                  displayName: 'Use Node.js'
+                  inputs:
+                      versionSpec: '18.x'
 
-    - task: Npm@1
-      displayName: 'Run E2E Tests'
-      inputs:
-        command: 'custom'
-        customCommand: 'run test:e2e'
+                - task: Npm@1
+                  displayName: 'npm install'
+                  inputs:
+                      command: 'install'
 
-- stage: SmartDeployment
-  displayName: 'Smart Deployment with Command Execution'
-  dependsOn: 
-    - SmartDecision
-    - SmartTesting
-  condition: succeeded()
-  jobs:
-  - job: SmartDeploy
-    displayName: 'Smart Deployment Execution'
-    steps:
-    - task: SmartTask@1
-      displayName: 'Smart Task: Execute Deployment Based on Context'
-      inputs:
-        prompt: |
-          Based on the branch, build reason, and previous decisions:
-          1. If DEPLOY_TO_STAGING is true, execute deployment to staging environment
-          2. If DEPLOY_TO_PROD is true and this is main branch, execute deployment to production
-          3. Run appropriate health checks after deployment
-          4. Execute any necessary post-deployment tasks
-          
-          Use tools to:
-          - Execute shell commands for deployment
-          - Check environment variables for deployment configuration
-          - Verify deployment success through health checks
-        mode: 'execution'
-        additionalContext: |
-          {
-            "deployment_config": {
-              "staging": {
-                "url": "https://staging-api.example.com",
-                "health_check": "/health"
-              },
-              "production": {
-                "url": "https://api.example.com",
-                "health_check": "/health"
-              }
-            },
-            "commands": {
-              "build": "npm run build",
-              "deploy_staging": "kubectl apply -f k8s/staging/",
-              "deploy_production": "kubectl apply -f k8s/production/",
-              "health_check": "curl -f"
-            }
-          }
+                - task: Npm@1
+                  displayName: 'Run E2E Tests'
+                  inputs:
+                      command: 'custom'
+                      customCommand: 'run test:e2e'
 
-- stage: ContextGatheringExample
-  displayName: 'Example: Context Gathering with Tools'
-  dependsOn: []
-  condition: eq(variables['Build.Reason'], 'Manual')
-  jobs:
-  - job: DemonstrateTools
-    displayName: 'Demonstrate Tool-based Context Gathering'
-    steps:
-    - task: SmartTask@1
-      displayName: 'Smart Task: Demonstrate Available Tools'
-      inputs:
-        prompt: |
-          Demonstrate the available tools by:
-          1. Reading the package.json file to understand project dependencies
-          2. Getting pipeline variables to show build context
-          3. Listing the current directory contents
-          4. Getting an environment variable (like PATH)
-          5. Setting a demonstration variable called DEMO_RESULT
-          
-          Analyze the gathered information and provide insights about the project.
-        mode: 'decision'
-        additionalContext: |
-          {
-            "demo_mode": true,
-            "tools_to_demonstrate": [
-              "read_file",
-              "get_pipeline_variable", 
-              "get_environment_variable",
-              "list_directory",
-              "set_pipeline_variable"
-            ]
-          }
+    - stage: SmartDeployment
+      displayName: 'Smart Deployment with Command Execution'
+      dependsOn:
+          - SmartDecision
+          - SmartTesting
+      condition: succeeded()
+      jobs:
+          - job: SmartDeploy
+            displayName: 'Smart Deployment Execution'
+            steps:
+                - task: SmartTask@1
+                  displayName: 'Smart Task: Execute Deployment Based on Context'
+                  inputs:
+                      prompt: |
+                          Based on the branch, build reason, and previous decisions:
+                          1. If DEPLOY_TO_STAGING is true, execute deployment to staging environment
+                          2. If DEPLOY_TO_PROD is true and this is main branch, execute deployment to production
+                          3. Run appropriate health checks after deployment
+                          4. Execute any necessary post-deployment tasks
 
-    - task: PowerShell@2
-      displayName: 'Show Demo Results'
-      inputs:
-        script: |
-          Write-Host "Demo Result: $(DEMO_RESULT)"
+                          Use tools to:
+                          - Execute shell commands for deployment
+                          - Check environment variables for deployment configuration
+                          - Verify deployment success through health checks
+                      mode: 'execution'
+                      additionalContext: |
+                          {
+                            "deployment_config": {
+                              "staging": {
+                                "url": "https://staging-api.example.com",
+                                "health_check": "/health"
+                              },
+                              "production": {
+                                "url": "https://api.example.com",
+                                "health_check": "/health"
+                              }
+                            },
+                            "commands": {
+                              "build": "npm run build",
+                              "deploy_staging": "kubectl apply -f k8s/staging/",
+                              "deploy_production": "kubectl apply -f k8s/production/",
+                              "health_check": "curl -f"
+                            }
+                          }
+
+    - stage: ContextGatheringExample
+      displayName: 'Example: Context Gathering with Tools'
+      dependsOn: []
+      condition: eq(variables['Build.Reason'], 'Manual')
+      jobs:
+          - job: DemonstrateTools
+            displayName: 'Demonstrate Tool-based Context Gathering'
+            steps:
+                - task: SmartTask@1
+                  displayName: 'Smart Task: Demonstrate Available Tools'
+                  inputs:
+                      prompt: |
+                          Demonstrate the available tools by:
+                          1. Reading the package.json file to understand project dependencies
+                          2. Getting pipeline variables to show build context
+                          3. Listing the current directory contents
+                          4. Getting an environment variable (like PATH)
+                          5. Setting a demonstration variable called DEMO_RESULT
+
+                          Analyze the gathered information and provide insights about the project.
+                      mode: 'decision'
+                      additionalContext: |
+                          {
+                            "demo_mode": true,
+                            "tools_to_demonstrate": [
+                              "read_file",
+                              "get_pipeline_variable", 
+                              "get_environment_variable",
+                              "list_directory",
+                              "set_pipeline_variable"
+                            ]
+                          }
+
+                - task: PowerShell@2
+                  displayName: 'Show Demo Results'
+                  inputs:
+                      script: |
+                          Write-Host "Demo Result: $(DEMO_RESULT)"

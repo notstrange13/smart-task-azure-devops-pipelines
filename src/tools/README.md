@@ -19,26 +19,31 @@ tools/
 ## 🔧 Tool Categories
 
 ### Pipeline & Environment (`pipeline.ts`)
+
 - **GetPipelineVariableTool**: Get pipeline variable values
 - **SetPipelineVariableTool**: Set pipeline variables for subsequent tasks
 - **GetPipelineTimelineTool**: Get pipeline execution timeline and performance metrics
 
 ### File System (`filesystem.ts`)
+
 - **ReadFileTool**: Read file contents
 - **WriteFileTool**: Write content to files
 - **ListDirectoryTool**: List directory contents with metadata
 
 ### Command Execution & Environment (`execution.ts`)
+
 - **ExecuteCommandTool**: Execute shell commands with real-time output
 - **GetEnvironmentVariableTool**: Get system environment variable values
 
 ### Git & Source Control (`git.ts`)
+
 - **GetCommitInfoTool**: Get detailed commit information
 - **GetPullRequestInfoTool**: Get PR information if applicable
 - **GetRepositoryInfoTool**: Get repository statistics
 - **GetBranchPolicyTool**: Get branch policies
 
 ### Build & Testing (`build.ts`)
+
 - **GetBuildChangesTool**: Get files changed in the current build
 - **GetBuildInfoTool**: Get detailed build information
 - **GetTestResultsTool**: Get test results for current build
@@ -46,22 +51,25 @@ tools/
 - **GetBuildWorkItemsTool**: Get work items associated with current build
 
 ### Notification (`notification.ts`)
+
 - **SendNotificationTool**: Send email notifications with build information
 
 ## 🏗️ Architecture
 
 ### Base Tool Class
+
 All tools inherit from the abstract `Tool` class:
 
 ```typescript
 abstract class Tool {
-    abstract name: string;
-    abstract description: string;
-    abstract execute(input: string): Promise<ToolResult>;
+  abstract name: string;
+  abstract description: string;
+  abstract execute(input: string): Promise<ToolResult>;
 }
 ```
 
 ### Tool Factory
+
 Use `createAllTools()` to get all available tools:
 
 ```typescript
@@ -89,16 +97,18 @@ tests/
 
 1. **Choose appropriate category** or create a new file
 2. **Implement the Tool interface**:
+
    ```typescript
    export class MyNewTool extends Tool {
-       name = 'my_new_tool';
-       description = 'Description of what it does';
-       
-       async execute(input: string): Promise<ToolResult> {
-           // Implementation
-       }
+     name = 'my_new_tool';
+     description = 'Description of what it does';
+
+     async execute(input: string): Promise<ToolResult> {
+       // Implementation
+     }
    }
    ```
+
 3. **Export from category file**
 4. **Add to index.ts exports and createAllTools()**
 5. **Write tests**
@@ -110,10 +120,10 @@ All tools return a standardized `ToolResult`:
 
 ```typescript
 interface ToolResult {
-    name: string;           // Tool name
-    result: any;           // Tool output data
-    success: boolean;      // Execution success
-    error?: string;        // Error message if failed
+  name: string; // Tool name
+  result: any; // Tool output data
+  success: boolean; // Execution success
+  error?: string; // Error message if failed
 }
 ```
 

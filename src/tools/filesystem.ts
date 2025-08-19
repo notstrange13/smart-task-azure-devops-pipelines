@@ -17,14 +17,14 @@ export class ReadFileTool extends Tool {
             return {
                 name: this.name,
                 result: content,
-                success: true
+                success: true,
             };
         } catch (error) {
             return {
                 name: this.name,
                 result: null,
                 success: false,
-                error: error instanceof Error ? error.message : String(error)
+                error: error instanceof Error ? error.message : String(error),
             };
         }
     }
@@ -46,25 +46,25 @@ export class WriteFileTool extends Tool {
 
             const fullPath = path.resolve(filePath);
             const dirPath = path.dirname(fullPath);
-            
+
             // Create directory if it doesn't exist
             if (!fs.existsSync(dirPath)) {
                 fs.mkdirSync(dirPath, { recursive: true });
             }
-            
+
             fs.writeFileSync(fullPath, content, 'utf8');
-            
+
             return {
                 name: this.name,
                 result: { filePath: fullPath, size: content.length },
-                success: true
+                success: true,
             };
         } catch (error) {
             return {
                 name: this.name,
                 result: null,
                 success: false,
-                error: error instanceof Error ? error.message : String(error)
+                error: error instanceof Error ? error.message : String(error),
             };
         }
     }
@@ -80,13 +80,13 @@ export class ListDirectoryTool extends Tool {
     async execute(dirPath: string): Promise<ToolResult> {
         try {
             const fullPath = path.resolve(dirPath);
-            
+
             if (!fs.existsSync(fullPath)) {
                 return {
                     name: this.name,
                     result: null,
                     success: false,
-                    error: `Directory does not exist: ${fullPath}`
+                    error: `Directory does not exist: ${fullPath}`,
                 };
             }
 
@@ -95,7 +95,7 @@ export class ListDirectoryTool extends Tool {
                     name: this.name,
                     result: null,
                     success: false,
-                    error: `Path is not a directory: ${fullPath}`
+                    error: `Path is not a directory: ${fullPath}`,
                 };
             }
 
@@ -107,21 +107,21 @@ export class ListDirectoryTool extends Tool {
                     name: file,
                     type: stats.isDirectory() ? 'directory' : 'file',
                     size: stats.size,
-                    modified: stats.mtime
+                    modified: stats.mtime,
                 };
             });
 
             return {
                 name: this.name,
                 result: fileDetails,
-                success: true
+                success: true,
             };
         } catch (error) {
             return {
                 name: this.name,
                 result: null,
                 success: false,
-                error: error instanceof Error ? error.message : String(error)
+                error: error instanceof Error ? error.message : String(error),
             };
         }
     }

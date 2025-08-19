@@ -11,33 +11,38 @@ export class GetBuildChangesTool extends Tool {
     name = 'get_build_changes';
     description = 'Get the list of files changed in the current build';
 
-    async execute(input: string): Promise<ToolResult> {
+    async execute(_input: string): Promise<ToolResult> {
         try {
             const buildId = tl.getVariable('Build.BuildId');
             const sourceVersion = tl.getVariable('Build.SourceVersion');
             const sourceBranch = tl.getVariable('Build.SourceBranch');
-            
+
             if (!buildId) {
                 return {
                     name: this.name,
                     result: null,
                     success: false,
-                    error: 'Build.BuildId not available'
+                    error: 'Build.BuildId not available',
                 };
             }
 
             // Get the changes for this build
             const changesResponse = await BuildClient.getBuildChanges(buildId);
-            
+
             let changedFiles: string[] = [];
-            
+
             // If we have changes, get the detailed file changes
             if (changesResponse.value && changesResponse.value.length > 0) {
                 for (const change of changesResponse.value) {
                     try {
-                        const commitChanges = await GitClient.getCommitChanges(change.location, change.id);
+                        const commitChanges = await GitClient.getCommitChanges(
+                            change.location,
+                            change.id
+                        );
                         if (commitChanges.changes) {
-                            const files = commitChanges.changes.map((c: any) => c.item?.path || c.path).filter(Boolean);
+                            const files = commitChanges.changes
+                                .map((c: any) => c.item?.path || c.path)
+                                .filter(Boolean);
                             changedFiles.push(...files);
                         }
                     } catch (error) {
@@ -56,17 +61,16 @@ export class GetBuildChangesTool extends Tool {
                     sourceVersion,
                     sourceBranch,
                     changedFiles,
-                    totalChangedFiles: changedFiles.length
+                    totalChangedFiles: changedFiles.length,
                 },
-                success: true
+                success: true,
             };
-
         } catch (error) {
             return {
                 name: this.name,
                 result: null,
                 success: false,
-                error: error instanceof Error ? error.message : String(error)
+                error: error instanceof Error ? error.message : String(error),
             };
         }
     }
@@ -79,21 +83,21 @@ export class GetBuildInfoTool extends Tool {
     name = 'get_build_info';
     description = 'Get detailed information about the current build';
 
-    async execute(input: string): Promise<ToolResult> {
+    async execute(_input: string): Promise<ToolResult> {
         try {
             const buildId = tl.getVariable('Build.BuildId');
-            
+
             if (!buildId) {
                 return {
                     name: this.name,
                     result: null,
                     success: false,
-                    error: 'Build.BuildId not available'
+                    error: 'Build.BuildId not available',
                 };
             }
 
             const buildInfo = await BuildClient.getBuildInfo(buildId);
-            
+
             return {
                 name: this.name,
                 result: {
@@ -109,17 +113,16 @@ export class GetBuildInfoTool extends Tool {
                     definition: buildInfo.definition,
                     repository: buildInfo.repository,
                     sourceBranch: buildInfo.sourceBranch,
-                    sourceVersion: buildInfo.sourceVersion
+                    sourceVersion: buildInfo.sourceVersion,
                 },
-                success: true
+                success: true,
             };
-
         } catch (error) {
             return {
                 name: this.name,
                 result: null,
                 success: false,
-                error: error instanceof Error ? error.message : String(error)
+                error: error instanceof Error ? error.message : String(error),
             };
         }
     }
@@ -132,16 +135,16 @@ export class GetTestResultsTool extends Tool {
     name = 'get_test_results';
     description = 'Get test results for the current build';
 
-    async execute(input: string): Promise<ToolResult> {
+    async execute(_input: string): Promise<ToolResult> {
         try {
             const buildId = tl.getVariable('Build.BuildId');
-            
+
             if (!buildId) {
                 throw new Error('Build ID not available');
             }
 
             const testResults = await BuildClient.getTestResults(buildId);
-            
+
             return {
                 name: this.name,
                 result: {
@@ -149,17 +152,16 @@ export class GetTestResultsTool extends Tool {
                     passedTests: testResults.passedTests || 0,
                     failedTests: testResults.failedTests || 0,
                     skippedTests: testResults.skippedTests || 0,
-                    testRuns: testResults.value || []
+                    testRuns: testResults.value || [],
                 },
-                success: true
+                success: true,
             };
-
         } catch (error) {
             return {
                 name: this.name,
                 result: null,
                 success: false,
-                error: error instanceof Error ? error.message : String(error)
+                error: error instanceof Error ? error.message : String(error),
             };
         }
     }
@@ -175,30 +177,29 @@ export class CheckArtifactExistsTool extends Tool {
     async execute(artifactName: string): Promise<ToolResult> {
         try {
             const buildId = tl.getVariable('Build.BuildId');
-            
+
             if (!buildId) {
                 throw new Error('Build ID not available');
             }
 
             const artifacts = await BuildClient.getArtifacts(buildId);
             const artifact = artifacts.value?.find((a: any) => a.name === artifactName);
-            
+
             return {
                 name: this.name,
                 result: {
                     exists: !!artifact,
                     artifact: artifact || null,
-                    allArtifacts: artifacts.value?.map((a: any) => a.name) || []
+                    allArtifacts: artifacts.value?.map((a: any) => a.name) || [],
                 },
-                success: true
+                success: true,
             };
-
         } catch (error) {
             return {
                 name: this.name,
                 result: null,
                 success: false,
-                error: error instanceof Error ? error.message : String(error)
+                error: error instanceof Error ? error.message : String(error),
             };
         }
     }
@@ -211,31 +212,30 @@ export class GetBuildWorkItemsTool extends Tool {
     name = 'get_build_work_items';
     description = 'Get work items associated with the current build';
 
-    async execute(input: string): Promise<ToolResult> {
+    async execute(_input: string): Promise<ToolResult> {
         try {
             const buildId = tl.getVariable('Build.BuildId');
-            
+
             if (!buildId) {
                 throw new Error('Build ID not available');
             }
 
             const workItems = await BuildClient.getBuildWorkItems(buildId);
-            
+
             return {
                 name: this.name,
                 result: {
                     count: workItems.count || 0,
-                    workItems: workItems.value || []
+                    workItems: workItems.value || [],
                 },
-                success: true
+                success: true,
             };
-
         } catch (error) {
             return {
                 name: this.name,
                 result: null,
                 success: false,
-                error: error instanceof Error ? error.message : String(error)
+                error: error instanceof Error ? error.message : String(error),
             };
         }
     }

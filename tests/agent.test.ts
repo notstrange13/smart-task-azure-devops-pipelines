@@ -6,16 +6,16 @@ describe('Agent', () => {
         input: {
             prompt: 'Test prompt for unit testing',
             mode: TaskMode.DECISION,
-            additionalContext: {}
+            additionalContext: {},
         },
         config: {
             modelType: ModelType.AZURE_OPENAI,
             modelConfig: {
                 instanceName: 'test-instance',
                 apiKey: 'test-key',
-                deploymentName: 'gpt-4o'
-            }
-        }
+                deploymentName: 'gpt-4o',
+            },
+        },
     };
 
     it('should initialize properly', () => {

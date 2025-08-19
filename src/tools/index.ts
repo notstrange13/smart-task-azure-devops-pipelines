@@ -5,28 +5,21 @@ export { Tool } from './base';
 export {
     GetPipelineVariableTool,
     SetPipelineVariableTool,
-    GetPipelineTimelineTool
+    GetPipelineTimelineTool,
 } from './pipeline';
 
 // Export filesystem tools
-export {
-    ReadFileTool,
-    WriteFileTool,
-    ListDirectoryTool
-} from './filesystem';
+export { ReadFileTool, WriteFileTool, ListDirectoryTool } from './filesystem';
 
 // Export execution tools
-export { 
-    ExecuteCommandTool,
-    GetEnvironmentVariableTool 
-} from './execution';
+export { ExecuteCommandTool, GetEnvironmentVariableTool } from './execution';
 
 // Export Git/source control tools
 export {
     GetCommitInfoTool,
     GetPullRequestInfoTool,
     GetRepositoryInfoTool,
-    GetBranchPolicyTool
+    GetBranchPolicyTool,
 } from './git';
 
 // Export build-related tools
@@ -35,46 +28,35 @@ export {
     GetBuildInfoTool,
     GetTestResultsTool,
     CheckArtifactExistsTool,
-    GetBuildWorkItemsTool
+    GetBuildWorkItemsTool,
 } from './build';
 
 // Export notification tools
-export {
-    SendNotificationTool
-} from './notification';
+export { SendNotificationTool } from './notification';
 
 // Export all tools as an array for easy registration
 import { Tool } from './base';
 import {
     GetPipelineVariableTool,
     SetPipelineVariableTool,
-    GetPipelineTimelineTool
+    GetPipelineTimelineTool,
 } from './pipeline';
-import {
-    ReadFileTool,
-    WriteFileTool,
-    ListDirectoryTool
-} from './filesystem';
-import { 
-    ExecuteCommandTool,
-    GetEnvironmentVariableTool 
-} from './execution';
+import { ReadFileTool, WriteFileTool, ListDirectoryTool } from './filesystem';
+import { ExecuteCommandTool, GetEnvironmentVariableTool } from './execution';
 import {
     GetCommitInfoTool,
     GetPullRequestInfoTool,
     GetRepositoryInfoTool,
-    GetBranchPolicyTool
+    GetBranchPolicyTool,
 } from './git';
 import {
     GetBuildChangesTool,
     GetBuildInfoTool,
     GetTestResultsTool,
     CheckArtifactExistsTool,
-    GetBuildWorkItemsTool
+    GetBuildWorkItemsTool,
 } from './build';
-import {
-    SendNotificationTool
-} from './notification';
+import { SendNotificationTool } from './notification';
 
 /**
  * Factory function to create all available tools
@@ -86,31 +68,31 @@ export function createAllTools(): Tool[] {
         new GetPipelineVariableTool(),
         new SetPipelineVariableTool(),
         new GetPipelineTimelineTool(),
-        
+
         // File System Tools
         new ReadFileTool(),
         new WriteFileTool(),
         new ListDirectoryTool(),
-        
+
         // Execution & Environment Tools
         new ExecuteCommandTool(),
         new GetEnvironmentVariableTool(),
-        
+
         // Git/Source Control Tools
         new GetCommitInfoTool(),
         new GetPullRequestInfoTool(),
         new GetRepositoryInfoTool(),
         new GetBranchPolicyTool(),
-        
+
         // Build Tools
         new GetBuildChangesTool(),
         new GetBuildInfoTool(),
         new GetTestResultsTool(),
         new CheckArtifactExistsTool(),
         new GetBuildWorkItemsTool(),
-        
+
         // Notification Tools
-        new SendNotificationTool()
+        new SendNotificationTool(),
     ];
 }
 
@@ -123,5 +105,5 @@ export const ToolCategories = {
     EXECUTION: 'Command Execution',
     GIT: 'Git & Source Control',
     BUILD: 'Build & Testing',
-    NOTIFICATION: 'Notification'
+    NOTIFICATION: 'Notification',
 } as const;

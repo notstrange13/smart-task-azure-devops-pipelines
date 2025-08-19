@@ -27,7 +27,9 @@ export class PipelineClient extends BaseAzureDevOpsClient {
      * @param top - Number of runs to retrieve (default: 10)
      */
     static async getPipelineRuns(definitionId: string, top: number = 10): Promise<any> {
-        return this.makeRequest(`/build/builds?definitions=${definitionId}&$top=${top}&api-version=7.0`);
+        return this.makeRequest(
+            `/build/builds?definitions=${definitionId}&$top=${top}&api-version=7.0`
+        );
     }
 
     /**
@@ -55,11 +57,14 @@ export class PipelineClient extends BaseAzureDevOpsClient {
      * @param logId - Log ID
      */
     static async getLogContent(buildId: string, logId: string): Promise<string> {
-        const response = await fetch(`${this.getBaseUrl()}/build/builds/${buildId}/logs/${logId}?api-version=7.0`, {
-            headers: {
-                'Authorization': this.getAuthHeader()
+        const response = await fetch(
+            `${this.getBaseUrl()}/build/builds/${buildId}/logs/${logId}?api-version=7.0`,
+            {
+                headers: {
+                    Authorization: this.getAuthHeader(),
+                },
             }
-        });
+        );
 
         if (!response.ok) {
             throw new Error(`Failed to get log content: ${response.status} ${response.statusText}`);
