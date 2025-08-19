@@ -241,20 +241,33 @@ export class SetPipelineVariableTool extends Tool {
         try {
             // Parse input - expecting JSON with name and value
             let parsedInput;
-            try {
-                parsedInput = JSON.parse(input);
-            } catch {
-                // If not JSON, treat as simple name=value format
-                const parts = input.split('=');
-                if (parts.length !== 2) {
-                    return {
-                        name: this.name,
-                        result: null,
-                        success: false,
-                        error: 'Input must be JSON {"name": "varName", "value": "varValue"} or name=value format'
-                    };
+            
+            // Handle case where input might already be an object
+            if (typeof input === 'object' && input !== null) {
+                parsedInput = input;
+            } else if (typeof input === 'string') {
+                try {
+                    parsedInput = JSON.parse(input);
+                } catch {
+                    // If not JSON, treat as simple name=value format
+                    const parts = input.split('=');
+                    if (parts.length !== 2) {
+                        return {
+                            name: this.name,
+                            result: null,
+                            success: false,
+                            error: 'Input must be JSON {"name": "varName", "value": "varValue"} or name=value format'
+                        };
+                    }
+                    parsedInput = { name: parts[0].trim(), value: parts[1].trim() };
                 }
-                parsedInput = { name: parts[0].trim(), value: parts[1].trim() };
+            } else {
+                return {
+                    name: this.name,
+                    result: null,
+                    success: false,
+                    error: 'Input must be a string or object with name and value properties'
+                };
             }
 
             const { name, value } = parsedInput;

@@ -153,7 +153,6 @@ export class Agent {
         
         // Prevent infinite loops by checking if we've done too many steps
         if (state.past_steps.length > 10) {
-            console.log('Maximum steps reached, terminating execution');
             return 'end';
         }
         
@@ -162,8 +161,6 @@ export class Agent {
 
     async execute(): Promise<TaskResult> {
         try {
-            console.log('Starting Smart Task Agent execution...');
-
             // Initialize state for graph execution
             const initialState: PlanExecuteState = {
                 input: this.taskContext.input.prompt,
@@ -173,14 +170,12 @@ export class Agent {
             };
 
             // Execute the graph
-            console.log('Executing graph...');
             const finalState = await this.graph.invoke(initialState);
 
-            console.log('Graph execution completed');
             return this.buildTaskResult(finalState);
 
         } catch (error) {
-            console.error('Graph execution error:', error);
+            console.error('Task execution failed:', error);
             return {
                 success: false,
                 error: error instanceof Error ? error.message : String(error)
@@ -189,8 +184,6 @@ export class Agent {
     }
 
     private async planStep(state: PlanExecuteState): Promise<Partial<PlanExecuteState>> {
-        console.log('Planning step...');
-
         const plannerPrompt = `For the given objective, come up with a simple step by step plan.
 This plan should involve individual tasks, that if executed correctly will yield the correct answer. Do not add any superfluous steps.
 The result of the final step should be the final answer. Make sure that each step has all the information needed - do not skip steps.
@@ -220,26 +213,36 @@ Output only a JSON object with this structure:
         ]);
 
         try {
-            const planData = JSON.parse(response.content as string);
+            let content = response.content as string;
+            
+            // Handle markdown-wrapped JSON
+            if (content.includes('```json')) {
+                const jsonMatch = content.match(/```json\s*([\s\S]*?)\s*```/);
+                if (jsonMatch) {
+                    content = jsonMatch[1];
+                }
+            } else if (content.includes('```')) {
+                const jsonMatch = content.match(/```\s*([\s\S]*?)\s*```/);
+                if (jsonMatch) {
+                    content = jsonMatch[1];
+                }
+            }
+
+            const planData = JSON.parse(content);
             const plan = planData.steps || [];
-            console.log(`Created plan with ${plan.length} steps:`, plan);
             return { plan };
         } catch (error) {
-            console.error('Failed to parse plan response:', error);
             return { plan: ['Analyze the request and provide appropriate response'] };
         }
     }
 
     private async executeStep(state: PlanExecuteState): Promise<Partial<PlanExecuteState>> {
-        console.log('Executing step...');
-
         if (state.plan.length === 0) {
             const past_steps = [...state.past_steps, ['No plan available', 'Unable to execute - no plan found'] as [string, string]];
             return { past_steps };
         }
 
         const currentStep = state.plan[0];
-        console.log(`Executing: ${currentStep}`);
 
         // Use LLM to determine if this step needs tools and which ones
         const executionPrompt = `You are an execution agent. Your job is to execute the given step.
@@ -285,13 +288,27 @@ For tool-requiring steps:
                 new SystemMessage(executionPrompt)
             ]);
 
-            const executionData = JSON.parse(response.content as string);
+            let content = response.content as string;
+            
+            // Handle markdown-wrapped JSON
+            if (content.includes('```json')) {
+                const jsonMatch = content.match(/```json\s*([\s\S]*?)\s*```/);
+                if (jsonMatch) {
+                    content = jsonMatch[1];
+                }
+            } else if (content.includes('```')) {
+                const jsonMatch = content.match(/```\s*([\s\S]*?)\s*```/);
+                if (jsonMatch) {
+                    content = jsonMatch[1];
+                }
+            }
+
+            const executionData = JSON.parse(content);
             let stepResult: string;
 
             if (executionData.type === 'reasoning') {
                 // This step was pure reasoning - no tool calls needed
                 stepResult = executionData.result;
-                console.log(`Reasoning step result: ${stepResult}`);
             } else if (executionData.type === 'tools') {
                 // This step requires tool calls
                 const toolCalls = executionData.tools;
@@ -312,10 +329,8 @@ For tool-requiring steps:
                 const toolResults = await Promise.all(toolPromises);
                 results.push(...toolResults);
                 stepResult = results.join('\n');
-                console.log(`Tool execution step result: ${stepResult}`);
             } else {
                 stepResult = 'Invalid execution format - no result produced';
-                console.warn('Invalid execution response format');
             }
 
             const past_steps = [...state.past_steps, [currentStep, stepResult] as [string, string]];
@@ -324,7 +339,6 @@ For tool-requiring steps:
             return { past_steps, plan };
 
         } catch (error) {
-            console.error('Execution error:', error);
             const errorResult = `Execution failed: ${error instanceof Error ? error.message : String(error)}`;
             const past_steps = [...state.past_steps, [currentStep, errorResult] as [string, string]];
             const plan = state.plan.slice(1);
@@ -334,8 +348,6 @@ For tool-requiring steps:
     }
 
     private async replanStep(state: PlanExecuteState): Promise<Partial<PlanExecuteState>> {
-        console.log('Replanning step...');
-
         const replannerPrompt = `For the given objective, come up with a simple step by step plan.
 This plan should involve individual tasks, that if executed correctly will yield the correct answer. Do not add any superfluous steps.
 The result of the final step should be the final answer. Make sure that each step has all the information needed - do not skip steps.
@@ -370,27 +382,38 @@ OR if complete, output:
                 new SystemMessage(replannerPrompt)
             ]);
 
-            const replanData = JSON.parse(response.content as string);
+            let content = response.content as string;
+            
+            // Handle markdown-wrapped JSON
+            if (content.includes('```json')) {
+                const jsonMatch = content.match(/```json\s*([\s\S]*?)\s*```/);
+                if (jsonMatch) {
+                    content = jsonMatch[1];
+                }
+            } else if (content.includes('```')) {
+                const jsonMatch = content.match(/```\s*([\s\S]*?)\s*```/);
+                if (jsonMatch) {
+                    content = jsonMatch[1];
+                }
+            }
+
+            const replanData = JSON.parse(content);
             
             if (replanData.response) {
                 return { response: replanData.response };
             } else if (replanData.action && replanData.action.steps) {
                 const plan = replanData.action.steps;
-                console.log(`Updated plan with ${plan.length} steps:`, plan);
                 return { plan };
             } else {
                 return { response: 'Task completed successfully' };
             }
 
         } catch (error) {
-            console.error('Replanning error:', error);
             return { response: 'Task completed with errors during replanning' };
         }
     }
 
     private async getContext(): Promise<Record<string, any>> {
-        console.log('Collecting initial context...');
-        
         const context: Record<string, any> = {
             mode: this.taskContext.input.mode,
             timestamp: new Date().toISOString()
@@ -404,27 +427,16 @@ OR if complete, output:
                     : this.taskContext.input.additionalContext;
                 context.additional = additional;
             } catch (error) {
-                console.warn('Failed to parse additional context:', error);
                 context.additional = this.taskContext.input.additionalContext;
             }
         }
 
-        console.log('Initial context collected:');
-        console.log(`  Mode: ${context.mode}`);
-        console.log(`  Timestamp: ${context.timestamp}`);
-        if (context.additional) {
-            console.log(`  Additional: ${JSON.stringify(context.additional)}`);
-        } else {
-            console.log('  Additional: none');
-        }
-        console.log('Additional pipeline context will be gathered as needed');
         return context;
     }
 
     private buildTaskResult(finalState: PlanExecuteState): TaskResult {
         // If we have a response in the final state, include it in the result
         if (finalState.response) {
-            console.log('Task execution completed successfully');
             return {
                 success: true,
                 response: finalState.response
@@ -432,7 +444,6 @@ OR if complete, output:
         }
         
         // If no response but execution completed, return basic success
-        console.log('Task execution completed');
         return {
             success: true
         };

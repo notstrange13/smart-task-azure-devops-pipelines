@@ -27,6 +27,8 @@ import { TaskContext, ModelType, TaskMode } from './types';
 
 async function run(): Promise<void> {
     try {
+        console.log('Smart Task starting...');
+        
         // Get task inputs with fallback for development environment
         const isDevMode = process.env.NODE_ENV === 'development';
         
@@ -36,15 +38,9 @@ async function run(): Promise<void> {
         
         if (isDevMode) {
             // In development, use the captured environment variables
-            console.log('Debug: Captured environment variables:');
-            console.log(`  INPUT_PROMPT: ${inputPrompt}`);
-            console.log(`  INPUT_MODE: ${inputMode}`);
-            console.log(`  INPUT_ADDITIONALCONTEXT: ${inputAdditionalContext}`);
-            
             prompt = inputPrompt || '';
             mode = inputMode as TaskMode;
             additionalContextInput = inputAdditionalContext || '{}';
-            console.log('Development mode: Reading inputs from captured environment variables');
         } else {
             // In production, use standard Azure DevOps task library methods
             prompt = tl.getInput('prompt', true) || '';
@@ -64,13 +60,10 @@ async function run(): Promise<void> {
         }
 
         console.log(`Smart Task starting in ${mode} mode...`);
-        console.log(`Prompt: ${prompt}`);
 
         // Get model type from environment variable (defaults to Azure OpenAI)
         const modelTypeEnv = process.env.MODEL_TYPE || 'AZURE_OPENAI';
         const modelType = ModelType[modelTypeEnv as keyof typeof ModelType] || ModelType.AZURE_OPENAI;
-
-        console.log(`Using model type: ${modelType}`);
 
         // Initialize model configuration based on model type
         let modelConfig: any;
@@ -113,7 +106,7 @@ async function run(): Promise<void> {
         try {
             additionalContext = JSON.parse(additionalContextInput);
         } catch (error) {
-            console.log('Warning: Invalid additional context JSON, using empty object');
+            // Use empty object if parsing fails
         }
 
         // Create task context
@@ -140,7 +133,6 @@ async function run(): Promise<void> {
         }
 
     } catch (error) {
-        console.error('Smart Task error:', error);
         tl.setResult(tl.TaskResult.Failed, `Smart Task failed: ${error instanceof Error ? error.message : String(error)}`);
     }
 }

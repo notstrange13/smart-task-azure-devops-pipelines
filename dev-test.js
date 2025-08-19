@@ -12,23 +12,29 @@ const path = require('path');
 const args = process.argv.slice(2);
 let prompt = args[0];
 let mode = args[1];
+let additionalContext = args[2];
 
 // If no CLI arguments provided, check environment variables
 if (!prompt) {
-    prompt = process.env.TEST_PROMPT || process.env.INPUT_PROMPT;
+    prompt = process.env.INPUT_PROMPT;
 }
 
 if (!mode) {
-    mode = process.env.TEST_MODE || process.env.INPUT_MODE;
+    mode = process.env.INPUT_MODE;
+}
+
+if (!additionalContext) {
+    additionalContext = process.env.INPUT_ADDITIONALCONTEXT || '{}';
 }
 
 // If still no prompt or mode, show usage
 if (!prompt || !mode) {
-    console.log('Usage: node dev-test.js "Your prompt here" [decision|execution]');
+    console.log('Usage: node dev-test.js "Your prompt here" [decision|execution] [additional_context_json]');
     console.log('');
     console.log('Alternative: Set environment variables:');
-    console.log('  TEST_PROMPT="Your prompt here"');
-    console.log('  TEST_MODE="decision" or "execution"');
+    console.log('  INPUT_PROMPT="Your prompt here"');
+    console.log('  INPUT_MODE="decision" or "execution"');
+    console.log('  INPUT_ADDITIONALCONTEXT=\'{"key": "value"}\'');
     console.log('');
     console.log('Both prompt and mode are required via CLI args or environment variables.');
     process.exit(1);
@@ -42,6 +48,7 @@ if (mode !== 'decision' && mode !== 'execution') {
 console.log(`Testing Smart Task with:`);
 console.log(`  Prompt: ${prompt}`);
 console.log(`  Mode: ${mode}`);
+console.log(`  Additional Context: ${additionalContext}`);
 console.log(`  Source: ${args.length >= 2 ? 'CLI arguments' : 'Environment variables'}`);
 console.log(`  Environment: Development`);
 console.log('');
@@ -53,7 +60,7 @@ process.env.NODE_ENV = 'development';
 // Azure DevOps task lib converts input names to uppercase and prefixes with INPUT_
 process.env.INPUT_PROMPT = prompt;
 process.env.INPUT_MODE = mode;
-process.env.INPUT_ADDITIONALCONTEXT = '{}';
+process.env.INPUT_ADDITIONALCONTEXT = additionalContext;
 
 // Debug: Show what we're setting
 console.log('Setting environment variables:');
@@ -71,7 +78,7 @@ const childEnv = {
     NODE_ENV: 'development',
     INPUT_PROMPT: prompt,
     INPUT_MODE: mode,
-    INPUT_ADDITIONALCONTEXT: '{}'
+    INPUT_ADDITIONALCONTEXT: additionalContext
 };
 
 console.log('Final environment variables for child process:');
