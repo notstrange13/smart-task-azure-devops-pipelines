@@ -1,6 +1,3 @@
-// Capture INPUT_ environment variables FIRST, before any other imports
-import './providers/inputCapture';
-
 // Load environment variables from .env file during development (if it exists)
 if (process.env.NODE_ENV !== 'production') {
     try {
