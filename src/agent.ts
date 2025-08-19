@@ -16,27 +16,7 @@ import {
     PastStep,
     StateAnnotation
 } from './types';
-import {
-    Tool,
-    GetPipelineVariableTool,
-    ReadFileTool,
-    WriteFileTool,
-    GetEnvironmentVariableTool,
-    ListDirectoryTool,
-    ExecuteCommandTool,
-    SetPipelineVariableTool,
-    GetChangedFilesTool,
-    GetCommitInfoTool,
-    GetPullRequestInfoTool,
-    GetBuildInfoTool,
-    GetTestResultsTool,
-    GetPipelineTimelineTool,
-    GetWorkItemsTool,
-    CheckArtifactExistsTool,
-    GetRepositoryInfoTool,
-    GetBranchPolicyTool,
-    SendNotificationTool
-} from './tools';
+import { Tool, createAllTools } from './tools/index';
 
 export class Agent {
     private taskContext: TaskContext;
@@ -90,31 +70,7 @@ export class Agent {
     }
 
     private initializeTools(): Tool[] {
-        return [
-            // File and Environment Tools
-            new GetPipelineVariableTool(),
-            new SetPipelineVariableTool(),
-            new GetEnvironmentVariableTool(),
-            new ReadFileTool(),
-            new WriteFileTool(),
-            new ListDirectoryTool(),
-            new ExecuteCommandTool(),
-            
-            // Azure DevOps Context Tools
-            new GetBuildInfoTool(),
-            new GetChangedFilesTool(),
-            new GetCommitInfoTool(),
-            new GetPullRequestInfoTool(),
-            
-            // Advanced Azure DevOps Tools
-            new GetTestResultsTool(),
-            new GetPipelineTimelineTool(),
-            new GetWorkItemsTool(),
-            new CheckArtifactExistsTool(),
-            new GetRepositoryInfoTool(),
-            new GetBranchPolicyTool(),
-            new SendNotificationTool()
-        ];
+        return createAllTools();
     }
 
     private buildGraph(): any {

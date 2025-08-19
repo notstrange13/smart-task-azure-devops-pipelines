@@ -43,6 +43,31 @@ Traditional pipeline tasks are static and require manual configuration for diffe
 - Structured output with Zod validation
 - Professional logging without emoji clutter
 
+## 🏗️ Modular Architecture
+
+Smart Task features a clean, maintainable architecture with tools organized into logical categories:
+
+### Tools Organization
+```
+src/tools/
+├── base.ts           # Abstract Tool class foundation
+├── pipeline.ts       # Pipeline variables & timeline (3 tools)
+├── filesystem.ts     # File operations (3 tools)
+├── execution.ts      # Commands & environment (2 tools)
+├── git.ts           # Git & source control (5 tools)
+├── build.ts         # Build & testing tools (4 tools)
+├── collaboration.ts # Notification tools (1 tool)
+└── index.ts         # Factory function & exports
+```
+
+### Benefits
+- **Maintainable**: Logical separation by functionality
+- **Testable**: Individual tool files enable focused testing
+- **Extensible**: Easy to add new tools in appropriate categories
+- **Type-Safe**: Full TypeScript support with proper interfaces
+- **Professional**: Enterprise-ready code organization
+- **Modern Clients**: 5 specialized Azure DevOps API clients by domain
+
 ## Quick Start
 
 ### Prerequisites
