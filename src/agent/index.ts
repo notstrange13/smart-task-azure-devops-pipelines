@@ -27,7 +27,7 @@ export class Agent {
     async execute(): Promise<TaskResult> {
         try {
             const context = await this.contextBuilder.buildContext();
-            
+
             const initialState: PlanExecuteState = {
                 input: this.taskContext.input.prompt,
                 plan: [],

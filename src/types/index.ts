@@ -26,6 +26,4 @@ export { TaskMode } from './task';
 export { ModelType } from './config';
 
 // Schema exports
-export {
-    StateAnnotation,
-} from './state';
+export { StateAnnotation } from './state';

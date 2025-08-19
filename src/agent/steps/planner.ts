@@ -85,7 +85,7 @@ Output only a JSON object with this structure:
                 return jsonMatch[1];
             }
         }
-        
+
         return content;
     }
 }

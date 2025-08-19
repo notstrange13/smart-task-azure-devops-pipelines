@@ -36,9 +36,9 @@ export class ExecutorStep {
             const response = await this.chatModel.invoke([new SystemMessage(executionPrompt)]);
             const content = this.extractJsonFromResponse(response.content as string);
             const executionData = JSON.parse(content);
-            
+
             const stepResult = await this.processExecutionData(executionData);
-            
+
             const past_steps = [...state.past_steps, [currentStep, stepResult] as [string, string]];
             const plan = state.plan.slice(1); // Remove executed step
 
@@ -125,12 +125,13 @@ For tool-requiring steps:
     /**
      * Handles execution errors
      */
-    private handleExecutionError(error: any, currentStep: string, state: PlanExecuteState): Partial<PlanExecuteState> {
+    private handleExecutionError(
+        error: any,
+        currentStep: string,
+        state: PlanExecuteState
+    ): Partial<PlanExecuteState> {
         const errorResult = `Execution failed: ${error instanceof Error ? error.message : String(error)}`;
-        const past_steps = [
-            ...state.past_steps,
-            [currentStep, errorResult] as [string, string],
-        ];
+        const past_steps = [...state.past_steps, [currentStep, errorResult] as [string, string]];
         const plan = state.plan.slice(1);
 
         return { past_steps, plan };
@@ -151,7 +152,7 @@ For tool-requiring steps:
                 return jsonMatch[1];
             }
         }
-        
+
         return content;
     }
 }

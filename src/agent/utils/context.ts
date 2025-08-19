@@ -26,7 +26,7 @@ export class ContextBuilder {
                     typeof this.taskContext.input.additionalContext === 'string'
                         ? JSON.parse(this.taskContext.input.additionalContext)
                         : this.taskContext.input.additionalContext;
-                
+
                 Object.assign(context, additionalContext);
             } catch (error) {
                 console.warn('Failed to parse additional context:', error);

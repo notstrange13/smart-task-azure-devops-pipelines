@@ -95,7 +95,7 @@ OR if complete, output:
                 return jsonMatch[1];
             }
         }
-        
+
         return content;
     }
 }
