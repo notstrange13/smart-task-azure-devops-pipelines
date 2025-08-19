@@ -18,7 +18,7 @@ if (process.env.NODE_ENV !== 'production') {
     }
 }
 
-import { TaskExecutor } from './executor/task';
+import { TaskExecutor } from './executors/task';
 
 /**
  * Main entry point for the Smart Task Azure DevOps Pipeline Extension

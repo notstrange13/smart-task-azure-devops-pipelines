@@ -275,13 +275,13 @@ The project includes a flexible development script:
 
 ```bash
 # Basic execution test
-node dev-test.js "List all files in the current directory" execution
+node scripts/dev-test.js "List all files in the current directory" execution
 
 # Decision-making test
-node dev-test.js "Analyze the project structure and recommend a testing strategy" analysis
+node scripts/dev-test.js "Analyze the project structure and recommend a testing strategy" analysis
 
 # Complex scenario
-node dev-test.js "Based on package.json, determine if this is a web app or library and set appropriate build variables" execution
+node scripts/dev-test.js "Based on package.json, determine if this is a web app or library and set appropriate build variables" execution
 ```
 
 #### Environment Variables
@@ -290,12 +290,12 @@ node dev-test.js "Based on package.json, determine if this is a web app or libra
 # Set environment variables
 export TEST_PROMPT="Your AI prompt here"
 export TEST_MODE="execution"
-node dev-test.js
+node scripts/dev-test.js
 
 # PowerShell
 $env:TEST_PROMPT="Your AI prompt here"
 $env:TEST_MODE="execution"
-node dev-test.js
+node scripts/dev-test.js
 ```
 
 #### Environment File
@@ -315,7 +315,7 @@ Get-Content .env.test | ForEach-Object {
         [Environment]::SetEnvironmentVariable($matches[1], $matches[2])
     }
 }
-node dev-test.js
+node scripts/dev-test.js
 ```
 
 ### Project Structure
@@ -332,7 +332,8 @@ smart-task-azure-devops-pipelines/
 ├── dist/                     # Compiled output (auto-generated)
 ├── tests/                    # Jest test files
 ├── examples/                 # Example usage scenarios
-├── dev-test.js               # Development testing script
+├── scripts/                  # Development and utility scripts
+│   └── dev-test.js           # Development testing script
 ├── vss-extension.json        # Extension manifest
 └── package.json              # Dependencies and scripts
 ```
@@ -373,7 +374,7 @@ npm test:watch
 
 ```bash
 # Test with real Azure DevOps environment
-node dev-test.js "Integration test prompt" execution
+node scripts/dev-test.js "Integration test prompt" execution
 ```
 
 ## Building and Packaging
