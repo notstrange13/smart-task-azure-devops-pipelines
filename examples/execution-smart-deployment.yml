@@ -1,0 +1,212 @@
+# Smart Task Example: Automated Deployment with Environment Detection
+# This pipeline demonstrates AI executing deployment commands based on branch and environment analysis
+
+trigger:
+  branches:
+    include:
+      - main
+      - develop
+      - release/*
+
+variables:
+  - name: MODEL_TYPE
+    value: 'AZURE_OPENAI'
+  - name: AZURE_OPENAI_INSTANCE_NAME
+    value: 'your-openai-instance'
+  - name: AZURE_OPENAI_KEY
+    value: '$(AZURE_OPENAI_API_KEY)' # Store as secret variable
+  - name: AZURE_OPENAI_DEPLOYMENT_NAME
+    value: 'gpt-4o'
+  - name: AZURE_OPENAI_API_VERSION
+    value: '2024-02-15-preview'
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+stages:
+  - stage: Build
+    displayName: 'Build Application'
+    jobs:
+      - job: BuildApp
+        displayName: 'Build and Package Application'
+        steps:
+          - checkout: self
+            displayName: 'Checkout Source Code'
+
+          - task: NodeTool@0
+            displayName: 'Setup Node.js'
+            inputs:
+              versionSpec: '18.x'
+
+          - script: |
+              npm ci
+              npm run build
+              npm run test:unit
+            displayName: 'Install, Build, and Test'
+
+          - task: PublishBuildArtifacts@1
+            displayName: 'Publish Build Artifacts'
+            inputs:
+              pathToPublish: 'dist'
+              artifactName: 'webapp'
+
+  - stage: SmartDeployment
+    displayName: 'AI-Driven Smart Deployment'
+    dependsOn: Build
+    condition: succeeded()
+    jobs:
+      - job: IntelligentDeploy
+        displayName: 'AI-Executed Deployment Strategy'
+        steps:
+          - checkout: self
+            displayName: 'Checkout Source Code'
+
+          - task: DownloadBuildArtifacts@0
+            displayName: 'Download Build Artifacts'
+            inputs:
+              buildType: 'current'
+              artifactName: 'webapp'
+              downloadPath: '$(System.ArtifactsDirectory)'
+
+          - task: SmartTask@1
+            displayName: 'AI Execution: Smart Deployment Automation'
+            inputs:
+              prompt: |
+                Execute intelligent deployment based on the current build context:
+
+                1. **Analyze deployment context:**
+                   - Check the source branch to determine target environment
+                   - Get build variables to understand deployment configuration
+                   - Read deployment configuration files if they exist
+
+                2. **Determine deployment strategy:**
+                   - main branch → Production deployment (with approval gates)
+                   - develop branch → Staging deployment (automatic)
+                   - release/* branches → UAT/Pre-production environment
+                   - feature/* branches → Development environment
+
+                3. **Execute deployment commands:**
+                   - For Production: 
+                     * Verify all health checks pass
+                     * Deploy with blue-green strategy
+                     * Run smoke tests post-deployment
+                   - For Staging/UAT:
+                     * Direct deployment
+                     * Run integration tests
+                   - For Development:
+                     * Quick deployment for testing
+
+                4. **Post-deployment verification:**
+                   - Execute health check commands
+                   - Verify application is responding
+                   - Run smoke tests appropriate for the environment
+
+                Use available tools to execute shell commands and verify deployment success.
+
+              mode: 'execution'
+              additionalContext: |
+                {
+                  "deployment_config": {
+                    "environments": {
+                      "production": {
+                        "url": "https://myapp.com",
+                        "health_endpoint": "/health",
+                        "deployment_strategy": "blue-green",
+                        "approval_required": true
+                      },
+                      "staging": {
+                        "url": "https://staging.myapp.com",
+                        "health_endpoint": "/health",
+                        "deployment_strategy": "rolling",
+                        "approval_required": false
+                      },
+                      "development": {
+                        "url": "https://dev.myapp.com",
+                        "health_endpoint": "/health",
+                        "deployment_strategy": "direct",
+                        "approval_required": false
+                      }
+                    },
+                    "commands": {
+                      "health_check": "curl -f {url}/health",
+                      "deploy_prod": "kubectl apply -f k8s/production/ --wait=true",
+                      "deploy_staging": "kubectl apply -f k8s/staging/ --wait=true",
+                      "deploy_dev": "kubectl apply -f k8s/development/ --wait=true",
+                      "smoke_test": "npm run test:smoke"
+                    }
+                  },
+                  "branch_mapping": {
+                    "main": "production",
+                    "master": "production", 
+                    "develop": "staging",
+                    "release/*": "uat",
+                    "feature/*": "development"
+                  }
+                }
+
+          - task: PowerShell@2
+            displayName: 'Display Deployment Results'
+            inputs:
+              script: |
+                Write-Host "=== AI Deployment Execution Summary ==="
+                Write-Host "Branch: $(Build.SourceBranchName)"
+                Write-Host "Build ID: $(Build.BuildId)"
+                Write-Host "Deployment completed by AI automation"
+                Write-Host "Check the Smart Task logs above for detailed execution steps"
+
+  - stage: PostDeploymentValidation
+    displayName: 'Post-Deployment Validation'
+    dependsOn: SmartDeployment
+    condition: succeeded()
+    jobs:
+      - job: ValidationTests
+        displayName: 'Automated Validation Tests'
+        steps:
+          - task: SmartTask@1
+            displayName: 'AI Execution: Post-Deployment Validation'
+            inputs:
+              prompt: |
+                Execute comprehensive post-deployment validation:
+
+                1. **Health and availability checks:**
+                   - Verify application is responding on the deployed environment
+                   - Check all critical endpoints are accessible
+                   - Validate database connections if applicable
+
+                2. **Functional validation:**
+                   - Run smoke tests appropriate for the deployed environment
+                   - Execute API tests to verify core functionality
+                   - Check authentication and authorization flows
+
+                3. **Performance validation:**
+                   - Execute basic performance checks
+                   - Verify response times are within acceptable limits
+                   - Check resource utilization
+
+                4. **Security validation:**
+                   - Verify HTTPS is properly configured
+                   - Check for exposed sensitive information
+                   - Validate security headers
+
+                Report the validation results and any issues found.
+
+              mode: 'execution'
+              additionalContext: |
+                {
+                  "validation_config": {
+                    "health_checks": [
+                      "/health",
+                      "/api/status", 
+                      "/api/version"
+                    ],
+                    "smoke_tests": {
+                      "api_tests": "npm run test:api",
+                      "ui_tests": "npm run test:smoke-ui",
+                      "auth_tests": "npm run test:auth"
+                    },
+                    "performance_thresholds": {
+                      "response_time_ms": 2000,
+                      "availability_percent": 99.9
+                    }
+                  }
+                }

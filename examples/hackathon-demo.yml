@@ -1,0 +1,202 @@
+# Smart Task Example: Quick Demo Pipeline for Hackathons
+# This pipeline demonstrates both decision and execution modes in a simple, easy-to-understand format
+
+trigger:
+  branches:
+    include:
+      - main
+      - demo/*
+
+variables:
+  - name: MODEL_TYPE
+    value: 'AZURE_OPENAI'
+  - name: AZURE_OPENAI_INSTANCE_NAME
+    value: 'your-openai-instance'
+  - name: AZURE_OPENAI_KEY
+    value: '$(AZURE_OPENAI_API_KEY)' # Store as secret variable  
+  - name: AZURE_OPENAI_DEPLOYMENT_NAME
+    value: 'gpt-4o'
+  - name: AZURE_OPENAI_API_VERSION
+    value: '2024-02-15-preview'
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+stages:
+  - stage: DemoDecisionMode
+    displayName: '🧠 Demo: AI Decision Making'
+    jobs:
+      - job: ProjectAnalysis
+        displayName: 'AI Analyzes Project and Makes Decisions'
+        steps:
+          - checkout: self
+            displayName: 'Checkout Source Code'
+
+          - task: SmartTask@1
+            displayName: '🤖 AI Decision: Analyze This Project'
+            inputs:
+              prompt: |
+                Welcome to the Smart Task AI Demo! 
+
+                Please analyze this project and make some intelligent decisions:
+
+                1. **Project Discovery:**
+                   - What type of project is this? (web app, API, library, etc.)
+                   - What programming language and frameworks are used?
+                   - What's the primary purpose based on the code structure?
+
+                2. **Technology Assessment:**  
+                   - Read package.json to understand dependencies
+                   - Identify the build tools and scripts available
+                   - Assess the testing setup and coverage
+
+                3. **Smart Recommendations:**
+                   - Should we run tests? (set RUN_TESTS: true/false)
+                   - Should we build artifacts? (set BUILD_ARTIFACTS: true/false)  
+                   - What deployment environment fits this branch? (set TARGET_ENV: dev/staging/prod)
+                   - What's the recommended next action? (set NEXT_ACTION: description)
+
+                4. **Generate Summary:**
+                   - PROJECT_TYPE: Brief description of what this project does
+                   - TECH_STACK: Main technologies identified
+                   - CONFIDENCE: How confident you are in the analysis (1-10)
+
+                This is a demo, so be thorough in your analysis and explanations!
+
+              mode: 'decision'
+              additionalContext: |
+                {
+                  "demo_context": {
+                    "audience": "hackathon_participants",
+                    "goal": "demonstrate_ai_capabilities", 
+                    "show_reasoning": true,
+                    "environment": "demo"
+                  },
+                  "decision_criteria": {
+                    "test_threshold": "if_tests_exist_run_them",
+                    "build_threshold": "if_build_scripts_exist",
+                    "deployment_logic": "branch_name_based"
+                  }
+                }
+
+          - task: PowerShell@2
+            displayName: '📊 Display AI Analysis Results'
+            inputs:
+              script: |
+                Write-Host "================================="
+                Write-Host "🤖 AI PROJECT ANALYSIS RESULTS"
+                Write-Host "================================="
+                Write-Host ""
+                Write-Host "📋 PROJECT DETAILS:"
+                Write-Host "   Type: $(PROJECT_TYPE)"
+                Write-Host "   Tech Stack: $(TECH_STACK)"
+                Write-Host "   AI Confidence: $(CONFIDENCE)/10"
+                Write-Host ""
+                Write-Host "🎯 AI DECISIONS:"
+                Write-Host "   Run Tests: $(RUN_TESTS)"
+                Write-Host "   Build Artifacts: $(BUILD_ARTIFACTS)"
+                Write-Host "   Target Environment: $(TARGET_ENV)"
+                Write-Host ""
+                Write-Host "🚀 RECOMMENDED ACTION:"
+                Write-Host "   $(NEXT_ACTION)"
+                Write-Host ""
+                Write-Host "================================="
+
+  - stage: DemoExecutionMode
+    displayName: '⚡ Demo: AI Task Execution'
+    dependsOn: DemoDecisionMode
+    condition: succeeded()
+    jobs:
+      - job: AutomatedTasks
+        displayName: 'AI Executes Tasks Based on Analysis'
+        steps:
+          - checkout: self
+            displayName: 'Checkout Source Code'
+
+          - task: SmartTask@1
+            displayName: '🛠️ AI Execution: Automated Project Tasks'
+            inputs:
+              prompt: |
+                Time for the AI to take action! Based on the previous analysis, execute the recommended tasks:
+
+                1. **Project Setup Tasks:**
+                   - Check if dependencies need to be installed
+                   - Verify the project structure is healthy
+                   - Look for any obvious issues that need fixing
+
+                2. **Conditional Task Execution:**
+                   - If RUN_TESTS is true: Execute the test suite
+                   - If BUILD_ARTIFACTS is true: Build the project  
+                   - Create a simple deployment manifest for TARGET_ENV
+                   - Generate a project health report
+
+                3. **Demonstrate AI Capabilities:**
+                   - Show file reading by examining key project files
+                   - Execute shell commands to gather system information
+                   - Create a demo output file with findings
+                   - List directory contents to show project structure
+
+                4. **Final Report:**
+                   - Summarize what was accomplished
+                   - Report any issues encountered
+                   - Provide recommendations for the next steps
+                   - Generate metrics about the execution
+
+                This is a demo - be comprehensive and show off the AI's capabilities!
+
+              mode: 'execution'
+              additionalContext: |
+                {
+                  "execution_context": {
+                    "demo_mode": true,
+                    "show_commands": true,
+                    "create_artifacts": true,
+                    "verbose_logging": true
+                  },
+                  "task_config": {
+                    "max_execution_time": "5_minutes",
+                    "safe_operations_only": true,
+                    "create_demo_files": true,
+                    "generate_reports": true
+                  },
+                  "demo_outputs": {
+                    "health_report": "project_health.md",
+                    "execution_log": "ai_execution.log",
+                    "recommendations": "next_steps.md"
+                  }
+                }
+
+          - task: PowerShell@2
+            displayName: '📈 Display Execution Summary'
+            inputs:
+              script: |
+                Write-Host "================================="
+                Write-Host "⚡ AI TASK EXECUTION SUMMARY"
+                Write-Host "================================="
+                Write-Host ""
+                Write-Host "✅ COMPLETED TASKS:"
+                Write-Host "   - Project analysis and setup verification"
+                Write-Host "   - Conditional task execution based on AI decisions"
+                Write-Host "   - Automated file operations and system checks"
+                Write-Host "   - Generated comprehensive project reports"
+                Write-Host ""
+                Write-Host "📁 GENERATED ARTIFACTS:"
+                Write-Host "   - Project health assessment"
+                Write-Host "   - AI execution logs with detailed reasoning"
+                Write-Host "   - Next steps and recommendations"
+                Write-Host ""
+                Write-Host "🎯 DEMO HIGHLIGHTS:"
+                Write-Host "   - AI made intelligent decisions about the project"
+                Write-Host "   - Executed complex tasks automatically"
+                Write-Host "   - Provided detailed logging and reasoning"
+                Write-Host "   - Generated actionable insights and reports"
+                Write-Host ""
+                Write-Host "🚀 Ready for your hackathon demo!"
+                Write-Host "================================="
+
+          - task: PublishBuildArtifacts@1
+            displayName: '📦 Publish Demo Artifacts'
+            inputs:
+              pathToPublish: '$(Build.SourcesDirectory)'
+              artifactName: 'ai-demo-results'
+              publishLocation: 'Container'

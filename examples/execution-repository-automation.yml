@@ -1,0 +1,250 @@
+# Smart Task Example: Automated Issue Resolution and Pull Request Management
+# This pipeline demonstrates AI executing complex automation tasks based on repository analysis
+
+trigger: none # Manual trigger for demonstration
+
+pr:
+  branches:
+    include:
+      - main
+      - develop
+
+variables:
+  - name: MODEL_TYPE
+    value: 'AZURE_OPENAI'
+  - name: AZURE_OPENAI_INSTANCE_NAME
+    value: 'your-openai-instance'
+  - name: AZURE_OPENAI_KEY
+    value: '$(AZURE_OPENAI_API_KEY)' # Store as secret variable
+  - name: AZURE_OPENAI_DEPLOYMENT_NAME
+    value: 'gpt-4o'
+  - name: AZURE_OPENAI_API_VERSION
+    value: '2024-02-15-preview'
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+stages:
+  - stage: AutomatedRepositoryMaintenance
+    displayName: 'AI-Driven Repository Maintenance'
+    jobs:
+      - job: IntelligentMaintenance
+        displayName: 'Automated Repository Analysis and Maintenance'
+        steps:
+          - checkout: self
+            persistCredentials: true
+            displayName: 'Checkout Source Code'
+
+          - task: SmartTask@1
+            displayName: 'AI Execution: Repository Health Check and Maintenance'
+            inputs:
+              prompt: |
+                Perform comprehensive repository maintenance and health checks:
+
+                1. **Repository Analysis:**
+                   - Read package.json to check for outdated dependencies
+                   - Check if README.md exists and assess if it needs updates
+                   - Look for missing important files (.gitignore, LICENSE, CONTRIBUTING.md)
+                   - Analyze project structure for best practices
+
+                2. **Dependency Management:**
+                   - Check for security vulnerabilities in dependencies
+                   - Identify outdated packages that can be safely updated
+                   - Look for unused dependencies that can be removed
+
+                3. **Code Quality Checks:**
+                   - Look for TODO comments that might indicate incomplete work
+                   - Check for inconsistent code formatting
+                   - Identify potential configuration improvements
+
+                4. **Automated Fixes (where safe):**
+                   - Create/update .gitignore if missing common patterns
+                   - Update package.json scripts if improvements are obvious
+                   - Fix simple formatting issues
+                   - Update documentation if clearly outdated
+
+                5. **Generate Maintenance Report:**
+                   - List all issues found
+                   - Document what was automatically fixed
+                   - Recommend manual actions needed
+                   - Set pipeline variables with recommendations
+
+                Execute safe automated fixes and generate a comprehensive report.
+
+              mode: 'execution'
+              additionalContext: |
+                {
+                  "maintenance_config": {
+                    "auto_fix_enabled": true,
+                    "safe_operations": [
+                      "update_gitignore",
+                      "fix_json_formatting",
+                      "update_readme_badges",
+                      "organize_package_scripts"
+                    ],
+                    "manual_review_required": [
+                      "dependency_major_updates",
+                      "breaking_changes",
+                      "license_changes",
+                      "security_patches"
+                    ],
+                    "file_templates": {
+                      "gitignore": "node_modules/\n*.log\n.env\ndist/\n",
+                      "contributing": "# Contributing Guide\n\nThank you for contributing!",
+                      "license": "MIT"
+                    }
+                  },
+                  "quality_checks": {
+                    "dependency_age_threshold_days": 365,
+                    "security_severity_threshold": "moderate",
+                    "code_coverage_minimum": 80,
+                    "documentation_completeness": true
+                  }
+                }
+
+          - task: SmartTask@1
+            displayName: 'AI Execution: Generate Automated Issue Reports'
+            inputs:
+              prompt: |
+                Based on the repository analysis performed, create actionable issue reports:
+
+                1. **Create GitHub Issues (simulate with file creation):**
+                   - For each significant problem found, create a detailed issue description
+                   - Include steps to reproduce, expected vs actual behavior
+                   - Add appropriate labels and priority levels
+                   - Include code examples where relevant
+
+                2. **Generate Pull Request Suggestions:**
+                   - For automated fixes that were made, document the changes
+                   - For improvements that need manual review, create PR templates
+                   - Include testing instructions and review checklists
+
+                3. **Create Maintenance Dashboard:**
+                   - Generate a markdown report with current repository health
+                   - Include metrics, recommendations, and action items
+                   - Create visual indicators for different types of issues
+
+                4. **Set Up Automated Monitoring:**
+                   - Configure alerts for future dependency vulnerabilities
+                   - Set up automated dependency update schedules
+                   - Create recurring maintenance task reminders
+
+                Generate all reports as files that can be reviewed and acted upon.
+
+              mode: 'execution'
+              additionalContext: |
+                {
+                  "issue_templates": {
+                    "dependency_update": {
+                      "title": "Update {package_name} to {new_version}",
+                      "labels": ["dependencies", "enhancement"],
+                      "assignee": "maintainer"
+                    },
+                    "security_vulnerability": {
+                      "title": "Security vulnerability in {package_name}",
+                      "labels": ["security", "bug", "priority-high"],
+                      "assignee": "security-team"
+                    },
+                    "documentation_improvement": {
+                      "title": "Improve {document_name} documentation",
+                      "labels": ["documentation", "good-first-issue"],
+                      "assignee": null
+                    }
+                  },
+                  "report_formats": {
+                    "health_dashboard": "markdown",
+                    "issue_list": "json",
+                    "pr_suggestions": "markdown"
+                  }
+                }
+
+          - task: PublishBuildArtifacts@1
+            displayName: 'Publish Maintenance Reports'
+            inputs:
+              pathToPublish: '$(Build.SourcesDirectory)'
+              artifactName: 'maintenance-reports'
+              publishLocation: 'Container'
+
+          - task: PowerShell@2
+            displayName: 'Display Maintenance Summary'
+            inputs:
+              script: |
+                Write-Host "=== AI Repository Maintenance Summary ==="
+                Write-Host "Repository analysis completed successfully"
+                Write-Host ""
+                Write-Host "=== Key Findings ==="
+                Write-Host "Check the published artifacts for detailed reports:"
+                Write-Host "- Repository health dashboard"
+                Write-Host "- Automated issue recommendations"
+                Write-Host "- Pull request suggestions"
+                Write-Host "- Dependency update schedule"
+                Write-Host ""
+                Write-Host "=== Next Steps ==="
+                Write-Host "1. Review the generated maintenance reports"
+                Write-Host "2. Implement suggested automated fixes"
+                Write-Host "3. Schedule manual reviews for complex issues"
+                Write-Host "4. Set up ongoing automated maintenance"
+
+  - stage: ContinuousImprovement
+    displayName: 'AI-Driven Continuous Improvement Setup'
+    dependsOn: AutomatedRepositoryMaintenance
+    condition: succeeded()
+    jobs:
+      - job: SetupAutomation
+        displayName: 'Configure Ongoing AI Automation'
+        steps:
+          - task: SmartTask@1
+            displayName: 'AI Execution: Setup Continuous Improvement Automation'
+            inputs:
+              prompt: |
+                Set up ongoing automation and monitoring for continuous repository improvement:
+
+                1. **Create Automation Schedules:**
+                   - Weekly dependency vulnerability scans
+                   - Monthly dependency update checks
+                   - Quarterly repository health assessments
+                   - Annual license compliance reviews
+
+                2. **Configure Alert Systems:**
+                   - Set up notifications for security vulnerabilities
+                   - Monitor for outdated dependencies
+                   - Track code quality metrics over time
+                   - Alert on documentation gaps
+
+                3. **Generate Automation Scripts:**
+                   - Create scripts for automated dependency updates
+                   - Set up automated testing for dependency changes
+                   - Configure rollback procedures for failed updates
+                   - Generate monitoring dashboards
+
+                4. **Document Processes:**
+                   - Create runbooks for common maintenance tasks
+                   - Document escalation procedures
+                   - Set up knowledge base for future improvements
+                   - Create training materials for team members
+
+                Focus on creating sustainable, long-term automation solutions.
+
+              mode: 'execution'
+              additionalContext: |
+                {
+                  "automation_config": {
+                    "schedules": {
+                      "security_scan": "weekly",
+                      "dependency_check": "monthly", 
+                      "health_assessment": "quarterly",
+                      "compliance_review": "annually"
+                    },
+                    "notification_channels": [
+                      "email",
+                      "slack",
+                      "github_issues",
+                      "azure_devops_work_items"
+                    ],
+                    "rollback_strategies": {
+                      "dependency_updates": "automatic_on_test_failure",
+                      "configuration_changes": "manual_approval_required",
+                      "security_patches": "immediate_with_monitoring"
+                    }
+                  }
+                }

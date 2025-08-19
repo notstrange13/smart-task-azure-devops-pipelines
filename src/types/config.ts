@@ -1,6 +1,6 @@
 // Model Type enum
 export enum ModelType {
-    AZURE_OPENAI = 'azure_openai',
+    AZURE_OPENAI = 'AZURE_OPENAI',
     // Future model types can be added here
     // ANTHROPIC = 'anthropic',
     // LOCAL_OLLAMA = 'local_ollama',
