@@ -10,13 +10,22 @@ export class GetEnvironmentVariableTool extends Tool {
 
     async execute(variableName: string): Promise<ToolResult> {
         try {
+            console.log(`Getting environment variable: ${variableName}`);
             const value = process.env[variableName];
+            
+            if (value) {
+                console.log(`Environment variable found: ${variableName} = ${value.length > 100 ? value.substring(0, 100) + '...' : value}`);
+            } else {
+                console.log(`Environment variable not found: ${variableName}`);
+            }
+            
             return {
                 name: this.name,
                 result: value || null,
                 success: true,
             };
         } catch (error) {
+            console.log(`Failed to get environment variable: ${variableName} - ${error instanceof Error ? error.message : String(error)}`);
             return {
                 name: this.name,
                 result: null,

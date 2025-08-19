@@ -17,7 +17,10 @@ export class GetBuildChangesTool extends Tool {
             const sourceVersion = tl.getVariable('Build.SourceVersion');
             const sourceBranch = tl.getVariable('Build.SourceBranch');
 
+            console.log(`Getting build changes for Build ID: ${buildId}`);
+
             if (!buildId) {
+                console.log('Build.BuildId not available');
                 return {
                     name: this.name,
                     result: null,
@@ -30,6 +33,8 @@ export class GetBuildChangesTool extends Tool {
             const changesResponse = await BuildClient.getBuildChanges(buildId);
 
             let changedFiles: string[] = [];
+
+            console.log(`Found ${changesResponse.value?.length || 0} commits with changes`);
 
             // If we have changes, get the detailed file changes
             if (changesResponse.value && changesResponse.value.length > 0) {
@@ -54,6 +59,11 @@ export class GetBuildChangesTool extends Tool {
             // Remove duplicates
             changedFiles = [...new Set(changedFiles)];
 
+            console.log(`Build changes analysis completed: ${changedFiles.length} unique files changed`);
+            if (changedFiles.length > 0) {
+                console.log(`Sample changed files: ${changedFiles.slice(0, 5).join(', ')}${changedFiles.length > 5 ? '...' : ''}`);
+            }
+
             return {
                 name: this.name,
                 result: {
@@ -66,6 +76,7 @@ export class GetBuildChangesTool extends Tool {
                 success: true,
             };
         } catch (error) {
+            console.log(`Failed to get build changes: ${error instanceof Error ? error.message : String(error)}`);
             return {
                 name: this.name,
                 result: null,

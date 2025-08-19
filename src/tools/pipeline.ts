@@ -12,13 +12,22 @@ export class GetPipelineVariableTool extends Tool {
 
     async execute(variableName: string): Promise<ToolResult> {
         try {
+            console.log(`Getting pipeline variable: ${variableName}`);
             const value = tl.getVariable(variableName);
+            
+            if (value) {
+                console.log(`Pipeline variable found: ${variableName} = ${value.length > 100 ? value.substring(0, 100) + '...' : value}`);
+            } else {
+                console.log(`Pipeline variable not found: ${variableName}`);
+            }
+            
             return {
                 name: this.name,
                 result: value || null,
                 success: true,
             };
         } catch (error) {
+            console.log(`Failed to get pipeline variable: ${variableName} - ${error instanceof Error ? error.message : String(error)}`);
             return {
                 name: this.name,
                 result: null,

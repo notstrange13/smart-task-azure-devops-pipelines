@@ -13,13 +13,21 @@ export class ReadFileTool extends Tool {
     async execute(filePath: string): Promise<ToolResult> {
         try {
             const fullPath = path.resolve(filePath);
+            console.log(`Reading file: ${fullPath}`);
+            
             const content = fs.readFileSync(fullPath, 'utf8');
+            const lines = content.split('\n').length;
+            const size = Buffer.byteLength(content, 'utf8');
+            
+            console.log(`File read successfully: ${lines} lines, ${size} bytes`);
+            
             return {
                 name: this.name,
                 result: content,
                 success: true,
             };
         } catch (error) {
+            console.log(`Failed to read file: ${filePath} - ${error instanceof Error ? error.message : String(error)}`);
             return {
                 name: this.name,
                 result: null,
@@ -46,13 +54,20 @@ export class WriteFileTool extends Tool {
 
             const fullPath = path.resolve(filePath);
             const dirPath = path.dirname(fullPath);
+            
+            console.log(`Writing file: ${fullPath}`);
 
             // Create directory if it doesn't exist
             if (!fs.existsSync(dirPath)) {
                 fs.mkdirSync(dirPath, { recursive: true });
+                console.log(`Created directory: ${dirPath}`);
             }
 
             fs.writeFileSync(fullPath, content, 'utf8');
+            
+            const size = Buffer.byteLength(content, 'utf8');
+            const lines = content.split('\n').length;
+            console.log(`File written successfully: ${lines} lines, ${size} bytes`);
 
             return {
                 name: this.name,
@@ -60,6 +75,7 @@ export class WriteFileTool extends Tool {
                 success: true,
             };
         } catch (error) {
+            console.log(`Failed to write file: ${error instanceof Error ? error.message : String(error)}`);
             return {
                 name: this.name,
                 result: null,
@@ -80,8 +96,11 @@ export class ListDirectoryTool extends Tool {
     async execute(dirPath: string): Promise<ToolResult> {
         try {
             const fullPath = path.resolve(dirPath);
+            
+            console.log(`Listing directory: ${fullPath}`);
 
             if (!fs.existsSync(fullPath)) {
+                console.log(`Directory does not exist: ${fullPath}`);
                 return {
                     name: this.name,
                     result: null,
@@ -91,6 +110,7 @@ export class ListDirectoryTool extends Tool {
             }
 
             if (!fs.statSync(fullPath).isDirectory()) {
+                console.log(`Path is not a directory: ${fullPath}`);
                 return {
                     name: this.name,
                     result: null,
@@ -111,12 +131,16 @@ export class ListDirectoryTool extends Tool {
                 };
             });
 
+            console.log(`Directory listing completed: ${fileDetails.length} items found`);
+            console.log(`Files: ${fileDetails.filter(f => f.type === 'file').length}, Directories: ${fileDetails.filter(f => f.type === 'directory').length}`);
+
             return {
                 name: this.name,
                 result: fileDetails,
                 success: true,
             };
         } catch (error) {
+            console.log(`Failed to list directory: ${dirPath} - ${error instanceof Error ? error.message : String(error)}`);
             return {
                 name: this.name,
                 result: null,

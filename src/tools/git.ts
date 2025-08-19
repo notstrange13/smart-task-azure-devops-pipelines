@@ -15,7 +15,10 @@ export class GetCommitInfoTool extends Tool {
             const sourceVersion = commitId || tl.getVariable('Build.SourceVersion');
             const repositoryId = tl.getVariable('Build.Repository.ID');
 
+            console.log(`Getting commit information for: ${sourceVersion}`);
+
             if (!sourceVersion || !repositoryId) {
+                console.log('Build.SourceVersion or Build.Repository.ID not available');
                 return {
                     name: this.name,
                     result: null,
@@ -25,6 +28,9 @@ export class GetCommitInfoTool extends Tool {
             }
 
             const commitInfo = await GitClient.getCommitInfo(repositoryId, sourceVersion);
+
+            console.log(`Commit info retrieved: ${commitInfo.comment.substring(0, 100)}${commitInfo.comment.length > 100 ? '...' : ''}`);
+            console.log(`Author: ${commitInfo.author?.name}, Changes: ${JSON.stringify(commitInfo.changeCounts)}`);
 
             return {
                 name: this.name,
@@ -39,6 +45,7 @@ export class GetCommitInfoTool extends Tool {
                 success: true,
             };
         } catch (error) {
+            console.log(`Failed to get commit information: ${error instanceof Error ? error.message : String(error)}`);
             return {
                 name: this.name,
                 result: null,
