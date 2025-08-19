@@ -18,8 +18,20 @@ export class ConfigProvider {
      * Gets model type from environment variable
      */
     private getModelType(): ModelType {
-        const modelTypeEnv = process.env.MODEL_TYPE || 'AZURE_OPENAI';
-        return ModelType[modelTypeEnv as keyof typeof ModelType] || ModelType.AZURE_OPENAI;
+        const modelTypeEnv = process.env.MODEL_TYPE;
+
+        if (!modelTypeEnv) {
+            throw new Error('MODEL_TYPE environment variable is required. Set it to AZURE_OPENAI.');
+        }
+
+        const modelType = ModelType[modelTypeEnv as keyof typeof ModelType];
+        if (!modelType) {
+            throw new Error(
+                `Invalid model type: ${modelTypeEnv}. Currently only AZURE_OPENAI is supported.`
+            );
+        }
+
+        return modelType;
     }
 
     /**
@@ -47,11 +59,11 @@ export class ConfigProvider {
         const instanceName = process.env.AZURE_OPENAI_INSTANCE_NAME;
         const apiKey = process.env.AZURE_OPENAI_KEY;
         const deploymentName = process.env.AZURE_OPENAI_DEPLOYMENT_NAME;
-        const apiVersion = process.env.AZURE_OPENAI_API_VERSION || '2025-01-01-preview';
+        const apiVersion = process.env.AZURE_OPENAI_API_VERSION;
 
-        if (!instanceName || !apiKey || !deploymentName) {
+        if (!instanceName || !apiKey || !deploymentName || !apiVersion) {
             throw new Error(
-                'Azure OpenAI configuration missing. Set AZURE_OPENAI_INSTANCE_NAME, AZURE_OPENAI_KEY, and AZURE_OPENAI_DEPLOYMENT_NAME environment variables.'
+                'Azure OpenAI configuration missing. Set AZURE_OPENAI_INSTANCE_NAME, AZURE_OPENAI_KEY, AZURE_OPENAI_DEPLOYMENT_NAME, and AZURE_OPENAI_API_VERSION environment variables.'
             );
         }
 
