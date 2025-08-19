@@ -71,8 +71,8 @@ console.log(`  INPUT_MODE: ${process.env.INPUT_MODE}`);
 console.log(`  INPUT_ADDITIONALCONTEXT: ${process.env.INPUT_ADDITIONALCONTEXT}`);
 console.log('');
 
-// Run the built JavaScript
-const scriptPath = path.join(__dirname, 'dist', 'index.js');
+// Run the built JavaScript - go up one directory from scripts to project root
+const scriptPath = path.join(__dirname, '..', 'dist', 'index.js');
 
 // Explicitly create the environment for the child process
 const childEnv = {

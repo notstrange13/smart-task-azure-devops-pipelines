@@ -1,10 +1,7 @@
+// Import this BEFORE the task library to capture INPUT_ variables
+import { capturedInputs } from './inputCapture';
 import * as tl from 'azure-pipelines-task-lib/task';
 import { TaskMode } from '../types';
-
-// Capture INPUT_ environment variables before task library import (in case it consumes them)
-const inputPrompt = process.env.INPUT_PROMPT;
-const inputMode = process.env.INPUT_MODE;
-const inputAdditionalContext = process.env.INPUT_ADDITIONALCONTEXT;
 
 /**
  * Provides input data and validation for the task
@@ -35,9 +32,9 @@ export class InputProvider {
     private getRawInputs(): { prompt: string; mode: TaskMode; additionalContextInput: string } {
         if (this.isDevMode) {
             return {
-                prompt: inputPrompt || '',
-                mode: inputMode as TaskMode,
-                additionalContextInput: inputAdditionalContext || '{}',
+                prompt: capturedInputs.prompt || '',
+                mode: capturedInputs.mode as TaskMode,
+                additionalContextInput: capturedInputs.additionalContext || '{}',
             };
         } else {
             return {
