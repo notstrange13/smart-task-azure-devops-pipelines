@@ -21,6 +21,9 @@ export class PlannerStep {
      * Executes the planning step to generate a plan based on the input
      */
     async execute(state: PlanExecuteState): Promise<Partial<PlanExecuteState>> {
+        console.log('PLANNER: Starting planning phase...');
+        console.log(`Input: ${state.input}`);
+        
         const plannerPrompt = this.buildPlannerPrompt();
 
         const response = await this.chatModel.invoke([
@@ -34,9 +37,17 @@ export class PlannerStep {
             const content = this.extractJsonFromResponse(response.content as string);
             const planData = JSON.parse(content);
             const plan = planData.steps || [];
+            
+            console.log('PLANNER: Plan generated successfully');
+            console.log(`Plan steps (${plan.length}):`);
+            plan.forEach((step: string, index: number) => {
+                console.log(`   ${index + 1}. ${step}`);
+            });
+            
             return { plan };
         } catch (error) {
-            console.warn('Failed to parse plan response:', error);
+            console.warn('PLANNER: Failed to parse plan response:', error);
+            console.log('PLANNER: Using fallback plan');
             return { plan: ['Analyze the request and provide appropriate response'] };
         }
     }

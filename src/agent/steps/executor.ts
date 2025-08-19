@@ -22,6 +22,7 @@ export class ExecutorStep {
      */
     async execute(state: PlanExecuteState): Promise<Partial<PlanExecuteState>> {
         if (state.plan.length === 0) {
+            console.log('EXECUTOR: No plan available to execute');
             const past_steps = [
                 ...state.past_steps,
                 ['No plan available', 'Unable to execute - no plan found'] as [string, string],
@@ -30,6 +31,9 @@ export class ExecutorStep {
         }
 
         const currentStep = state.plan[0];
+        console.log(`EXECUTOR: Executing step ${state.past_steps.length + 1} of ${state.past_steps.length + state.plan.length}`);
+        console.log(`Current step: ${currentStep}`);
+        
         const executionPrompt = this.buildExecutionPrompt(currentStep, state);
 
         try {
@@ -38,6 +42,9 @@ export class ExecutorStep {
             const executionData = JSON.parse(content);
 
             const stepResult = await this.processExecutionData(executionData);
+            
+            console.log(`EXECUTOR: Step completed successfully`);
+            console.log(`Result: ${stepResult.length > 200 ? stepResult.substring(0, 200) + '...' : stepResult}`);
 
             const past_steps = [...state.past_steps, [currentStep, stepResult] as [string, string]];
             const plan = state.plan.slice(1); // Remove executed step

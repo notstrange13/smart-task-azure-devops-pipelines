@@ -18,6 +18,10 @@ export class ReplannerStep {
      * Executes the replanning step to update the plan or provide final response
      */
     async execute(state: PlanExecuteState): Promise<Partial<PlanExecuteState>> {
+        console.log('REPLANNER: Analyzing progress and determining next steps...');
+        console.log(`Completed steps: ${state.past_steps.length}`);
+        console.log(`Remaining steps: ${state.plan.length}`);
+        
         const replannerPrompt = this.buildReplannerPrompt(state);
 
         try {
@@ -27,7 +31,8 @@ export class ReplannerStep {
 
             return this.processReplanData(replanData);
         } catch (error) {
-            console.warn('Replanning failed:', error);
+            console.warn('REPLANNER: Replanning failed:', error);
+            console.log('REPLANNER: Task completed with errors during replanning');
             return { response: 'Task completed with errors during replanning' };
         }
     }
@@ -71,11 +76,19 @@ OR if complete, output:
      */
     private processReplanData(replanData: any): Partial<PlanExecuteState> {
         if (replanData.response) {
+            console.log('REPLANNER: Task completed! Providing final response');
+            console.log(`Final response: ${replanData.response.length > 200 ? replanData.response.substring(0, 200) + '...' : replanData.response}`);
             return { response: replanData.response };
         } else if (replanData.action && replanData.action.steps) {
             const plan = replanData.action.steps;
+            console.log('REPLANNER: Plan updated, continuing execution');
+            console.log(`New plan steps (${plan.length}):`);
+            plan.forEach((step: string, index: number) => {
+                console.log(`   ${index + 1}. ${step}`);
+            });
             return { plan };
         } else {
+            console.log('REPLANNER: Task completed successfully (default)');
             return { response: 'Task completed successfully' };
         }
     }
