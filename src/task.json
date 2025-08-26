@@ -1,0 +1,52 @@
+{
+  "$schema": "https://raw.githubusercontent.com/Microsoft/azure-pipelines-task-lib/master/tasks.schema.json",
+  "id": "74cbe7c3-c454-4c3a-97d0-7c04e5fc77a0",
+  "name": "SmartTask",
+  "friendlyName": "Smart Task",
+  "description": "Intelligent task that makes pipelines contextually aware and dynamic using AI",
+  "helpMarkDown": "Brings AI-powered contextual awareness, dynamic decision-making and execution to Azure DevOps pipelines.",
+  "category": "Utility",
+  "author": "Pratik Panda",
+  "version": {
+    "Major": 1,
+    "Minor": 0,
+    "Patch": 0
+  },
+  "instanceNameFormat": "Smart Task ($(mode))",
+  "inputs": [
+    {
+      "name": "prompt",
+      "type": "multiLine",
+      "label": "Prompt",
+      "defaultValue": "",
+      "required": true,
+      "helpMarkDown": "Natural language instruction for the AI agent (e.g., 'Analyze changed files and set test variables', 'Deploy to appropriate environment based on branch')"
+    },
+    {
+      "name": "mode",
+      "type": "pickList",
+      "label": "Mode",
+      "defaultValue": "execution",
+      "required": true,
+      "options": {
+        "execution": "Execution Mode - Execute commands and perform actions",
+        "decision": "Decision Mode - Set variables to adapt and control pipeline flow"
+      },
+      "helpMarkDown": "The mode of operation: execution for running commands and performing actions, decision for setting pipeline variables to control flow"
+    },
+    {
+      "name": "additionalContext",
+      "type": "multiLine",
+      "label": "Additional Context",
+      "defaultValue": "{}",
+      "required": false,
+      "helpMarkDown": "JSON object with additional context key-value pairs to include in AI decision-making"
+    }
+  ],
+  "execution": {
+    "Node16": {
+      "target": "index.js",
+      "workingDirectory": "$(currentDirectory)"
+    }
+  }
+}
