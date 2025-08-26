@@ -31,7 +31,7 @@ npm test
 - Real cost and time savings in CI/CD pipelines
 - Production-ready implementation patterns
 
-## 🚀 Ready for Demonstrations
+## 🚀 Ready for Hackathons
 
 Each example is designed for quick, compelling demonstrations that show immediate business value. Perfect for:
 
