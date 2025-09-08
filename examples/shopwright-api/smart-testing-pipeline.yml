@@ -115,22 +115,6 @@ stages:
           TEST_SCOPE: $[ stageDependencies.IntelligentTestStrategy.AnalyzeAndDecide.outputs['SetOutputVars.TEST_SCOPE'] ]
           TEST_REASON: $[ stageDependencies.IntelligentTestStrategy.AnalyzeAndDecide.outputs['SetOutputVars.TEST_REASON'] ]
       jobs:
-          - job: DebugVariables
-            displayName: 'Debug: Display Received Variables'
-            steps:
-                - task: PowerShell@2
-                  displayName: 'Show Variables from Previous Stage'
-                  inputs:
-                      targetType: 'inline'
-                      script: |
-                          Write-Host "=== Variables Received from Decision Stage ==="
-                          Write-Host "RUN_UNIT_TESTS: $(RUN_UNIT_TESTS)"
-                          Write-Host "RUN_INTEGRATION_TESTS: $(RUN_INTEGRATION_TESTS)"
-                          Write-Host "RUN_E2E_TESTS: $(RUN_E2E_TESTS)"
-                          Write-Host "TEST_SCOPE: $(TEST_SCOPE)"
-                          Write-Host "TEST_REASON: $(TEST_REASON)"
-                          Write-Host "================================================"
-
           - job: UnitTests
             displayName: 'Unit Tests'
             condition: eq(variables['RUN_UNIT_TESTS'], 'true')

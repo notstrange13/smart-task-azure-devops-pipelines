@@ -107,20 +107,29 @@ export class GetBuildChangesTool extends Tool {
 
             // If we have changes, get the detailed file changes
             if (changesResponse.value && changesResponse.value.length > 0) {
-                for (const change of changesResponse.value) {
-                    try {
-                        const commitChanges = await GitClient.getCommitChanges(
-                            change.location,
-                            change.id
-                        );
-                        if (commitChanges.changes) {
-                            const files = commitChanges.changes
-                                .map((c: any) => c.item?.path || c.path)
-                                .filter(Boolean);
-                            changedFiles.push(...files);
+                const repositoryId = tl.getVariable('Build.Repository.ID');
+                if (!repositoryId) {
+                    console.log('Build.Repository.ID not available, cannot get detailed changes');
+                } else {
+                    for (const change of changesResponse.value) {
+                        try {
+                            console.log(`Getting changes for commit: ${change.id}`);
+                            const commitChanges = await GitClient.getCommitChanges(
+                                repositoryId,
+                                change.id
+                            );
+                            if (commitChanges.changes) {
+                                const files = commitChanges.changes
+                                    .map((c: any) => c.item?.path || c.path)
+                                    .filter(Boolean);
+                                changedFiles.push(...files);
+                                console.log(
+                                    `Found ${files.length} changed files in commit ${change.id}`
+                                );
+                            }
+                        } catch (error) {
+                            console.warn(`Failed to get changes for commit ${change.id}:`, error);
                         }
-                    } catch (error) {
-                        console.warn(`Failed to get changes for commit ${change.id}:`, error);
                     }
                 }
             }
