@@ -107,32 +107,10 @@ export class GetBuildChangesTool extends Tool {
 
             // If we have changes, get the detailed file changes
             if (changesResponse.value && changesResponse.value.length > 0) {
-                let repositoryId = tl.getVariable('Build.Repository.ID');
-
-                // Debug log the repository ID
-                console.log(`Raw Build.Repository.ID: ${repositoryId}`);
-
+                const repositoryId = tl.getVariable('Build.Repository.ID');
                 if (!repositoryId) {
                     console.log('Build.Repository.ID not available, cannot get detailed changes');
                 } else {
-                    // If repositoryId contains a full URL, extract just the GUID
-                    if (repositoryId.includes('/_apis/git/repositories/')) {
-                        const parts = repositoryId.split('/_apis/git/repositories/');
-                        if (parts.length > 1) {
-                            repositoryId = parts[1];
-                            console.log(`Extracted repository GUID from URL: ${repositoryId}`);
-                        }
-                    }
-
-                    // If still looks like a URL, try to get the last part
-                    if (repositoryId.includes('/')) {
-                        const parts = repositoryId.split('/');
-                        repositoryId = parts[parts.length - 1];
-                        console.log(`Extracted final part as repository ID: ${repositoryId}`);
-                    }
-
-                    console.log(`Using repository ID: ${repositoryId}`);
-
                     for (const change of changesResponse.value) {
                         try {
                             console.log(`Getting changes for commit: ${change.id}`);
@@ -154,9 +132,7 @@ export class GetBuildChangesTool extends Tool {
                         }
                     }
                 }
-            }
-
-            // Remove duplicates
+            } // Remove duplicates
             changedFiles = [...new Set(changedFiles)];
 
             console.log(
