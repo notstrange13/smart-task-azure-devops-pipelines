@@ -44,7 +44,7 @@
     }
   ],
   "execution": {
-    "Node16": {
+    "Node20_1": {
       "target": "index.js",
       "workingDirectory": "$(currentDirectory)"
     }

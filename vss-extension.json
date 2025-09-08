@@ -3,7 +3,7 @@
   "id": "smart-task-azure-devops-pipelines",
   "name": "Smart Task for Azure DevOps Pipelines",
   "version": "1.0.0",
-  "publisher": "pratikxpanda",
+  "publisher": "pratikpanda",
   "targets": [
     {
       "id": "Microsoft.VisualStudio.Services"

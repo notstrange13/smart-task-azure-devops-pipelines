@@ -17,17 +17,9 @@ trigger:
       - develop
       - feature/*
 
+
 variables:
-  - name: MODEL_TYPE
-    value: 'AZURE_OPENAI'
-  - name: AZURE_OPENAI_INSTANCE_NAME
-    value: 'your-openai-instance'
-  - name: AZURE_OPENAI_KEY
-    value: '$(AZURE_OPENAI_API_KEY)' # Store as secret variable
-  - name: AZURE_OPENAI_DEPLOYMENT_NAME
-    value: 'gpt-4o'
-  - name: AZURE_OPENAI_API_VERSION
-    value: '2024-02-15-preview'
+  - group: ShopwrightAPI
 
 pool:
   vmImage: 'ubuntu-latest'
@@ -44,6 +36,12 @@ stages:
 
           - task: SmartTask@1
             displayName: 'AI Decision: Intelligent Test Strategy'
+            env:
+              MODEL_TYPE: $(MODEL_TYPE)
+              AZURE_OPENAI_INSTANCE_NAME: $(AZURE_OPENAI_INSTANCE_NAME)
+              AZURE_OPENAI_KEY: $(AZURE_OPENAI_KEY)
+              AZURE_OPENAI_DEPLOYMENT_NAME: $(AZURE_OPENAI_DEPLOYMENT_NAME)
+              AZURE_OPENAI_API_VERSION: $(AZURE_OPENAI_API_VERSION)
             inputs:
               prompt: |
                 Analyze this repository and the current build context to make intelligent testing decisions:
@@ -92,6 +90,7 @@ stages:
           - task: PowerShell@2
             displayName: 'Display AI Test Strategy Decisions'
             inputs:
+              targetType: 'inline'
               script: |
                 Write-Host "=== AI Test Strategy Decisions ==="
                 Write-Host "Source Branch: $(Build.SourceBranchName)"

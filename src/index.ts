@@ -1,3 +1,16 @@
+// Polyfills for Node.js environment compatibility
+if (typeof globalThis !== 'undefined') {
+    if (!globalThis.ReadableStream) {
+        globalThis.ReadableStream = class ReadableStream {} as any;
+    }
+    if (!globalThis.WritableStream) {
+        globalThis.WritableStream = class WritableStream {} as any;
+    }
+    if (!globalThis.TransformStream) {
+        globalThis.TransformStream = class TransformStream {} as any;
+    }
+}
+
 // Load environment variables from .env file during development (if it exists)
 if (process.env.NODE_ENV !== 'production') {
     try {
