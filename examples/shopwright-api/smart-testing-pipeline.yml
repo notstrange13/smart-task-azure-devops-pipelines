@@ -35,6 +35,7 @@ stages:
             displayName: 'Checkout Source Code'
 
           - task: SmartTask@1
+            name: SmartDecision
             displayName: 'AI Decision: Intelligent Test Strategy'
             env:
               MODEL_TYPE: $(MODEL_TYPE)
@@ -88,6 +89,7 @@ stages:
                 }
 
           - task: PowerShell@2
+            name: SetOutputVars
             displayName: 'Display AI Test Strategy Decisions'
             inputs:
               targetType: 'inline'
@@ -102,12 +104,41 @@ stages:
                 Write-Host "Run E2E Tests: $(RUN_E2E_TESTS)"
                 Write-Host "Test Scope: $(TEST_SCOPE)"
                 Write-Host "Decision Reason: $(TEST_REASON)"
+                Write-Host ""
+                Write-Host "=== Setting Job Output Variables ==="
+                Write-Host "##vso[task.setvariable variable=RUN_UNIT_TESTS;isOutput=true]$(RUN_UNIT_TESTS)"
+                Write-Host "##vso[task.setvariable variable=RUN_INTEGRATION_TESTS;isOutput=true]$(RUN_INTEGRATION_TESTS)"
+                Write-Host "##vso[task.setvariable variable=RUN_E2E_TESTS;isOutput=true]$(RUN_E2E_TESTS)"
+                Write-Host "##vso[task.setvariable variable=TEST_SCOPE;isOutput=true]$(TEST_SCOPE)"
+                Write-Host "##vso[task.setvariable variable=TEST_REASON;isOutput=true]$(TEST_REASON)"
 
   - stage: ExecuteTests
     displayName: 'Execute AI-Recommended Tests'
     dependsOn: IntelligentTestStrategy
     condition: succeeded()
+    variables:
+      RUN_UNIT_TESTS: $[ stageDependencies.IntelligentTestStrategy.AnalyzeAndDecide.outputs['SetOutputVars.RUN_UNIT_TESTS'] ]
+      RUN_INTEGRATION_TESTS: $[ stageDependencies.IntelligentTestStrategy.AnalyzeAndDecide.outputs['SetOutputVars.RUN_INTEGRATION_TESTS'] ]
+      RUN_E2E_TESTS: $[ stageDependencies.IntelligentTestStrategy.AnalyzeAndDecide.outputs['SetOutputVars.RUN_E2E_TESTS'] ]
+      TEST_SCOPE: $[ stageDependencies.IntelligentTestStrategy.AnalyzeAndDecide.outputs['SetOutputVars.TEST_SCOPE'] ]
+      TEST_REASON: $[ stageDependencies.IntelligentTestStrategy.AnalyzeAndDecide.outputs['SetOutputVars.TEST_REASON'] ]
     jobs:
+      - job: DebugVariables
+        displayName: 'Debug: Display Received Variables'
+        steps:
+          - task: PowerShell@2
+            displayName: 'Show Variables from Previous Stage'
+            inputs:
+              targetType: 'inline'
+              script: |
+                Write-Host "=== Variables Received from Decision Stage ==="
+                Write-Host "RUN_UNIT_TESTS: $(RUN_UNIT_TESTS)"
+                Write-Host "RUN_INTEGRATION_TESTS: $(RUN_INTEGRATION_TESTS)"
+                Write-Host "RUN_E2E_TESTS: $(RUN_E2E_TESTS)"
+                Write-Host "TEST_SCOPE: $(TEST_SCOPE)"
+                Write-Host "TEST_REASON: $(TEST_REASON)"
+                Write-Host "================================================"
+
       - job: UnitTests
         displayName: 'Unit Tests'
         condition: eq(variables['RUN_UNIT_TESTS'], 'true')

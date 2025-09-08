@@ -91,11 +91,15 @@ export class SetPipelineVariableTool extends Tool {
 
             console.log(`Setting pipeline variable: ${name} = ${value}`);
 
-            // Set as pipeline variable for subsequent tasks
+            // Set as pipeline variable for subsequent tasks in the same job
             tl.setVariable(name, value);
 
-            // Also set as output variable
+            // Set as output variable for cross-job and cross-stage access
             tl.setVariable(name, value, false, true);
+            
+            // Also use the command logging approach for better compatibility
+            console.log(`##vso[task.setvariable variable=${name}]${value}`);
+            console.log(`##vso[task.setvariable variable=${name};isOutput=true]${value}`);
 
             return {
                 name: this.name,

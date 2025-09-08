@@ -2,6 +2,7 @@ import { Tool } from './base';
 import { ToolResult } from '../types';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as tl from 'azure-pipelines-task-lib/task';
 
 /**
  * Tool for reading file contents
@@ -12,8 +13,20 @@ export class ReadFileTool extends Tool {
 
     async execute(filePath: string): Promise<ToolResult> {
         try {
-            const fullPath = path.resolve(filePath);
+            // Get the source directory (where the code is checked out)
+            // This is the working directory for the pipeline, not the task directory
+            const sourceDirectory = tl.getVariable('Build.SourcesDirectory') || tl.getVariable('System.DefaultWorkingDirectory') || process.cwd();
+            
+            let fullPath: string;
+            if (path.isAbsolute(filePath)) {
+                fullPath = filePath;
+            } else {
+                // Resolve relative paths against the source directory, not the task directory
+                fullPath = path.resolve(sourceDirectory, filePath);
+            }
+            
             console.log(`Reading file: ${fullPath}`);
+            console.log(`Source directory: ${sourceDirectory}`);
             
             const content = fs.readFileSync(fullPath, 'utf8');
             const lines = content.split('\n').length;
@@ -52,10 +65,21 @@ export class WriteFileTool extends Tool {
                 throw new Error('filePath and content are required');
             }
 
-            const fullPath = path.resolve(filePath);
+            // Get the source directory (where the code is checked out)
+            const sourceDirectory = tl.getVariable('Build.SourcesDirectory') || tl.getVariable('System.DefaultWorkingDirectory') || process.cwd();
+            
+            let fullPath: string;
+            if (path.isAbsolute(filePath)) {
+                fullPath = filePath;
+            } else {
+                // Resolve relative paths against the source directory, not the task directory
+                fullPath = path.resolve(sourceDirectory, filePath);
+            }
+            
             const dirPath = path.dirname(fullPath);
             
             console.log(`Writing file: ${fullPath}`);
+            console.log(`Source directory: ${sourceDirectory}`);
 
             // Create directory if it doesn't exist
             if (!fs.existsSync(dirPath)) {
@@ -95,9 +119,19 @@ export class ListDirectoryTool extends Tool {
 
     async execute(dirPath: string): Promise<ToolResult> {
         try {
-            const fullPath = path.resolve(dirPath);
+            // Get the source directory (where the code is checked out)
+            const sourceDirectory = tl.getVariable('Build.SourcesDirectory') || tl.getVariable('System.DefaultWorkingDirectory') || process.cwd();
+            
+            let fullPath: string;
+            if (path.isAbsolute(dirPath)) {
+                fullPath = dirPath;
+            } else {
+                // Resolve relative paths against the source directory, not the task directory
+                fullPath = path.resolve(sourceDirectory, dirPath);
+            }
             
             console.log(`Listing directory: ${fullPath}`);
+            console.log(`Source directory: ${sourceDirectory}`);
 
             if (!fs.existsSync(fullPath)) {
                 console.log(`Directory does not exist: ${fullPath}`);
