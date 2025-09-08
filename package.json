@@ -1,7 +1,7 @@
 {
-  "name": "smart-task-azure-devops-pipelines",
+  "name": "smart-task",
   "version": "1.0.0",
-  "description": "Intelligent Azure DevOps Pipeline task with contextual awareness and dynamic execution",
+  "description": "Intelligent Azure DevOps Pipeline task with contextual awareness and dynamic execution.",
   "main": "dist/index.js",
   "scripts": {
     "build": "webpack --mode=production",
