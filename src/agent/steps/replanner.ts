@@ -21,7 +21,7 @@ export class ReplannerStep {
         console.log('REPLANNER: Analyzing progress and determining next steps...');
         console.log(`Completed steps: ${state.past_steps.length}`);
         console.log(`Remaining steps: ${state.plan.length}`);
-        
+
         const replannerPrompt = this.buildReplannerPrompt(state);
 
         try {
@@ -77,7 +77,9 @@ OR if complete, output:
     private processReplanData(replanData: any): Partial<PlanExecuteState> {
         if (replanData.response) {
             console.log('REPLANNER: Task completed! Providing final response');
-            console.log(`Final response: ${replanData.response.length > 200 ? replanData.response.substring(0, 200) + '...' : replanData.response}`);
+            console.log(
+                `Final response: ${replanData.response.length > 200 ? replanData.response.substring(0, 200) + '...' : replanData.response}`
+            );
             return { response: replanData.response };
         } else if (replanData.action && replanData.action.steps) {
             const plan = replanData.action.steps;

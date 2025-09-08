@@ -8,48 +8,57 @@ import * as tl from 'azure-pipelines-task-lib/task';
  */
 export class GetPipelineVariableTool extends Tool {
     name = 'get_pipeline_variable';
-    description = 'Get the value of a pipeline variable by name. Supports common aliases like "sourceBranch" (maps to Build.SourceBranchName), "buildReason" (maps to Build.Reason), etc.';
+    description =
+        'Get the value of a pipeline variable by name. Supports common aliases like "sourceBranch" (maps to Build.SourceBranchName), "buildReason" (maps to Build.Reason), etc.';
 
     async execute(variableName: string): Promise<ToolResult> {
         try {
             console.log(`Getting pipeline variable: ${variableName}`);
-            
+
             // Map common variable names to Azure DevOps built-in variable names
             const variableMapping: { [key: string]: string } = {
-                'sourceBranch': 'Build.SourceBranchName',
-                'sourceBranchName': 'Build.SourceBranchName',
-                'targetBranch': 'System.PullRequest.TargetBranchName',
-                'targetBranchName': 'System.PullRequest.TargetBranchName',
-                'buildReason': 'Build.Reason',
-                'buildId': 'Build.BuildId',
-                'buildNumber': 'Build.BuildNumber',
-                'repositoryName': 'Build.Repository.Name',
-                'teamProject': 'System.TeamProject',
-                'pullRequestId': 'System.PullRequest.PullRequestId',
-                'agentName': 'Agent.Name',
-                'agentOS': 'Agent.OS',
+                sourceBranch: 'Build.SourceBranchName',
+                sourceBranchName: 'Build.SourceBranchName',
+                targetBranch: 'System.PullRequest.TargetBranchName',
+                targetBranchName: 'System.PullRequest.TargetBranchName',
+                buildReason: 'Build.Reason',
+                buildId: 'Build.BuildId',
+                buildNumber: 'Build.BuildNumber',
+                repositoryName: 'Build.Repository.Name',
+                teamProject: 'System.TeamProject',
+                pullRequestId: 'System.PullRequest.PullRequestId',
+                agentName: 'Agent.Name',
+                agentOS: 'Agent.OS',
             };
-            
+
             // Use mapped name if available, otherwise use the original name
             const actualVariableName = variableMapping[variableName] || variableName;
             const value = tl.getVariable(actualVariableName);
-            
+
             if (value) {
-                console.log(`Pipeline variable found: ${actualVariableName} = ${value.length > 100 ? value.substring(0, 100) + '...' : value}`);
+                console.log(
+                    `Pipeline variable found: ${actualVariableName} = ${value.length > 100 ? value.substring(0, 100) + '...' : value}`
+                );
                 if (actualVariableName !== variableName) {
-                    console.log(`Note: Variable '${variableName}' was mapped to Azure DevOps variable '${actualVariableName}'`);
+                    console.log(
+                        `Note: Variable '${variableName}' was mapped to Azure DevOps variable '${actualVariableName}'`
+                    );
                 }
             } else {
-                console.log(`Pipeline variable not found: ${actualVariableName} (requested as '${variableName}')`);
+                console.log(
+                    `Pipeline variable not found: ${actualVariableName} (requested as '${variableName}')`
+                );
             }
-            
+
             return {
                 name: this.name,
                 result: value || null,
                 success: true,
             };
         } catch (error) {
-            console.log(`Failed to get pipeline variable: ${variableName} - ${error instanceof Error ? error.message : String(error)}`);
+            console.log(
+                `Failed to get pipeline variable: ${variableName} - ${error instanceof Error ? error.message : String(error)}`
+            );
             return {
                 name: this.name,
                 result: null,
@@ -118,7 +127,7 @@ export class SetPipelineVariableTool extends Tool {
 
             // Set as output variable for cross-job and cross-stage access
             tl.setVariable(name, value, false, true);
-            
+
             // Also use the command logging approach for better compatibility
             console.log(`##vso[task.setvariable variable=${name}]${value}`);
             console.log(`##vso[task.setvariable variable=${name};isOutput=true]${value}`);
