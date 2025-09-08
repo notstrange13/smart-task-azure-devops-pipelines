@@ -24,6 +24,7 @@ export {
 
 // Export build-related tools
 export {
+    GetBuildContextTool,
     GetBuildChangesTool,
     GetBuildInfoTool,
     GetTestResultsTool,
@@ -50,6 +51,7 @@ import {
     GetBranchPolicyTool,
 } from './git';
 import {
+    GetBuildContextTool,
     GetBuildChangesTool,
     GetBuildInfoTool,
     GetTestResultsTool,
@@ -65,6 +67,7 @@ import { SendNotificationTool } from './notification';
 export function createAllTools(): Tool[] {
     return [
         // Pipeline Tools
+        new GetBuildContextTool(),
         new GetPipelineVariableTool(),
         new SetPipelineVariableTool(),
         new GetPipelineTimelineTool(),

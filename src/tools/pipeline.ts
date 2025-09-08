@@ -8,17 +8,39 @@ import * as tl from 'azure-pipelines-task-lib/task';
  */
 export class GetPipelineVariableTool extends Tool {
     name = 'get_pipeline_variable';
-    description = 'Get the value of a pipeline variable by name';
+    description = 'Get the value of a pipeline variable by name. Supports common aliases like "sourceBranch" (maps to Build.SourceBranchName), "buildReason" (maps to Build.Reason), etc.';
 
     async execute(variableName: string): Promise<ToolResult> {
         try {
             console.log(`Getting pipeline variable: ${variableName}`);
-            const value = tl.getVariable(variableName);
+            
+            // Map common variable names to Azure DevOps built-in variable names
+            const variableMapping: { [key: string]: string } = {
+                'sourceBranch': 'Build.SourceBranchName',
+                'sourceBranchName': 'Build.SourceBranchName',
+                'targetBranch': 'System.PullRequest.TargetBranchName',
+                'targetBranchName': 'System.PullRequest.TargetBranchName',
+                'buildReason': 'Build.Reason',
+                'buildId': 'Build.BuildId',
+                'buildNumber': 'Build.BuildNumber',
+                'repositoryName': 'Build.Repository.Name',
+                'teamProject': 'System.TeamProject',
+                'pullRequestId': 'System.PullRequest.PullRequestId',
+                'agentName': 'Agent.Name',
+                'agentOS': 'Agent.OS',
+            };
+            
+            // Use mapped name if available, otherwise use the original name
+            const actualVariableName = variableMapping[variableName] || variableName;
+            const value = tl.getVariable(actualVariableName);
             
             if (value) {
-                console.log(`Pipeline variable found: ${variableName} = ${value.length > 100 ? value.substring(0, 100) + '...' : value}`);
+                console.log(`Pipeline variable found: ${actualVariableName} = ${value.length > 100 ? value.substring(0, 100) + '...' : value}`);
+                if (actualVariableName !== variableName) {
+                    console.log(`Note: Variable '${variableName}' was mapped to Azure DevOps variable '${actualVariableName}'`);
+                }
             } else {
-                console.log(`Pipeline variable not found: ${variableName}`);
+                console.log(`Pipeline variable not found: ${actualVariableName} (requested as '${variableName}')`);
             }
             
             return {

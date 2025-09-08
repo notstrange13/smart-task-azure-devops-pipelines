@@ -48,29 +48,29 @@ stages:
                 Analyze this repository and the current build context to make intelligent testing decisions:
 
                 1. **Analyze the codebase structure:**
-                   - Read package.json to understand the project type and dependencies
-                   - Check if this is a frontend, backend, or full-stack project
-                   - Identify testing frameworks in use
+                   - Examine package.json to understand the project type and dependencies
+                   - Determine if this is a frontend, backend, or full-stack project
+                   - Identify testing frameworks and scripts available
 
                 2. **Analyze the build context:**
-                   - Check the source branch name to understand the type of changes
-                   - Determine if this is a feature, hotfix, or main branch build
-                   - Get build reason (manual, PR, scheduled, etc.)
+                   - Check the source branch to understand the type of changes (feature, hotfix, main/master)
+                   - Consider the build trigger reason (manual, pull request, scheduled, etc.)
+                   - Evaluate the scope and risk level of changes
 
-                3. **Make testing decisions based on analysis:**
-                   - For main/master branch: Run full test suite
-                   - For feature branches: Run relevant tests based on likely changed areas
-                   - For hotfix branches: Run critical path tests only
-                   - For dependency updates: Run integration tests
+                3. **Make intelligent testing decisions:**
+                   - For main/master branch: Run comprehensive test suite for maximum confidence
+                   - For feature branches: Run targeted tests based on likely impact areas
+                   - For hotfix branches: Focus on critical path testing for fast feedback
+                   - For dependency updates: Emphasize integration and compatibility tests
 
-                4. **Set pipeline variables for the test strategy:**
+                4. **Set pipeline variables for the test execution strategy:**
                    - RUN_UNIT_TESTS: true/false
                    - RUN_INTEGRATION_TESTS: true/false
                    - RUN_E2E_TESTS: true/false
                    - TEST_SCOPE: 'minimal' | 'standard' | 'comprehensive'
-                   - TEST_REASON: explanation of the decision
+                   - TEST_REASON: clear explanation of the testing strategy decision
 
-                Use the available tools to gather information and make data-driven decisions.
+                Make data-driven decisions to optimize test execution time while maintaining appropriate quality gates.
 
               mode: 'decision'
               additionalContext: |
