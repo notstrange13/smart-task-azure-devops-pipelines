@@ -41,34 +41,123 @@ export class ReplannerStep {
      * Builds the replanner prompt
      */
     private buildReplannerPrompt(state: PlanExecuteState): string {
-        return `For the given objective, come up with a simple step by step plan.
-This plan should involve individual tasks, that if executed correctly will yield the correct answer. Do not add any superfluous steps.
-The result of the final step should be the final answer. Make sure that each step has all the information needed - do not skip steps.
+        const completionAnalysis = this.analyzeCompletionStatus(state);
 
-Your objective was this: ${state.input}
+        return `You are a replanning agent. Your job is to analyze progress and decide whether to continue or complete the task.
 
-Your original plan was this: ${JSON.stringify(state.plan)}
+CURRENT OBJECTIVE: ${state.input}
+EXECUTION MODE: ${this.taskContext.input.mode}
 
-You have currently done the follow steps: ${JSON.stringify(state.past_steps)}
+PROGRESS ANALYSIS:
+- Completed steps: ${state.past_steps.length}
+- Remaining planned steps: ${state.plan.length}
+- Recent results: ${state.past_steps
+            .slice(-2)
+            .map(step => `"${step[0]}" → "${step[1]}"`)
+            .join('; ')}
 
-MODE REQUIREMENTS:
-- Decision mode: Final step MUST use set_pipeline_variable tool to set the decision result
-- Execution mode: Final step MUST use execute_command tool to run the required commands
-- Only use tool calls when information gathering or actions are needed, not for pure reasoning
+COMPLETION STATUS ANALYSIS:
+${completionAnalysis}
 
-Update your plan accordingly. If no more steps are needed and you can return to the user, then respond with that. Otherwise, fill out the plan. Only add steps to the plan that still NEED to be done. Do not return previously done steps as part of the plan.
+DECISION CRITERIA:
+1. **COMPLETE THE TASK** if any of these conditions are met:
+   - For DECISION mode: A pipeline variable has been successfully set
+   - For EXECUTION mode: Required commands have been executed successfully  
+   - You have gathered sufficient information to answer the original objective
+   - Recent steps show the main goal has been achieved
+   - Continuing would add no meaningful value
 
-Output only a JSON object with this structure for next steps:
+2. **CONTINUE WITH NEW STEPS** only if:
+   - Critical information is still missing for the objective
+   - Essential actions have not been completed
+   - The objective genuinely cannot be answered with current progress
+
+MODE-SPECIFIC COMPLETION INDICATORS:
+- Decision mode: Look for successful variable setting, decision making, or analysis completion
+- Execution mode: Look for successful command execution or process completion
+
+INSTRUCTIONS:
+- Be decisive about completion - avoid unnecessary additional steps
+- Focus on the CORE objective, not peripheral tasks
+- If you can provide a meaningful answer based on completed work, do so
+- Only add steps that are absolutely essential
+
+Output ONLY a JSON object:
+
+For completion:
 {
-  "action": {
-    "steps": ["step1", "step2", ...]
-  }
+  "response": "Clear answer based on completed steps and current context"
 }
 
-OR if complete, output:
+For continuation (use sparingly):
 {
-  "response": "Final answer based on completed steps"
+  "action": {
+    "steps": ["essential_step_1", "essential_step_2"]
+  }
 }`;
+    }
+
+    /**
+     * Analyzes the current completion status to help with decision making
+     */
+    private analyzeCompletionStatus(state: PlanExecuteState): string {
+        const analysis = [];
+
+        // Check for mode-specific completion indicators
+        if (this.taskContext.input.mode === 'decision') {
+            const hasDecision = state.past_steps.some(
+                step =>
+                    step[1].includes('variable') ||
+                    step[1].includes('decision') ||
+                    step[1].includes('set') ||
+                    step[0].includes('set_pipeline_variable')
+            );
+            analysis.push(
+                `Decision mode completion: ${hasDecision ? 'ACHIEVED - Variable/decision set' : 'Pending - No decision variable set yet'}`
+            );
+        }
+
+        if (this.taskContext.input.mode === 'execution') {
+            const hasExecution = state.past_steps.some(
+                step =>
+                    step[1].includes('executed') ||
+                    step[1].includes('completed') ||
+                    step[1].includes('success') ||
+                    step[0].includes('execute_command')
+            );
+            analysis.push(
+                `Execution mode completion: ${hasExecution ? 'ACHIEVED - Commands executed' : 'Pending - No execution completed yet'}`
+            );
+        }
+
+        // Check for information gathering completion
+        const hasInformationGathering = state.past_steps.some(
+            step =>
+                step[1].includes('file') ||
+                step[1].includes('read') ||
+                step[1].includes('found') ||
+                step[1].includes('analyzed')
+        );
+        analysis.push(
+            `Information gathering: ${hasInformationGathering ? 'COMPLETED - Data collected' : 'Minimal - Limited information gathered'}`
+        );
+
+        // Check for error patterns
+        const recentErrors = state.past_steps
+            .slice(-3)
+            .filter(
+                step =>
+                    step[1].includes('error') ||
+                    step[1].includes('failed') ||
+                    step[1].includes('not found')
+            );
+        if (recentErrors.length > 0) {
+            analysis.push(
+                `Error status: ${recentErrors.length} recent errors detected - consider completion with current results`
+            );
+        }
+
+        return analysis.join('\n');
     }
 
     /**
@@ -83,14 +172,34 @@ OR if complete, output:
             return { response: replanData.response };
         } else if (replanData.action && replanData.action.steps) {
             const plan = replanData.action.steps;
+
+            // Filter out vague or redundant steps
+            const filteredPlan = plan.filter((step: string) => {
+                const stepLower = step.toLowerCase();
+                return !(
+                    (stepLower.includes('analyze') && stepLower.includes('determine')) ||
+                    (stepLower.includes('review') && stepLower.includes('check')) ||
+                    step.length < 10 || // Too vague
+                    stepLower === 'continue' ||
+                    stepLower === 'proceed'
+                );
+            });
+
+            if (filteredPlan.length === 0) {
+                console.log(
+                    'REPLANNER: All proposed steps were filtered out as non-essential. Completing task.'
+                );
+                return { response: 'Task completed - no additional essential steps identified' };
+            }
+
             console.log('REPLANNER: Plan updated, continuing execution');
-            console.log(`New plan steps (${plan.length}):`);
-            plan.forEach((step: string, index: number) => {
+            console.log(`New plan steps (${filteredPlan.length} essential steps):`);
+            filteredPlan.forEach((step: string, index: number) => {
                 console.log(`   ${index + 1}. ${step}`);
             });
-            return { plan };
+            return { plan: filteredPlan };
         } else {
-            console.log('REPLANNER: Task completed successfully (default)');
+            console.log('REPLANNER: Task completed successfully (no valid action provided)');
             return { response: 'Task completed successfully' };
         }
     }
