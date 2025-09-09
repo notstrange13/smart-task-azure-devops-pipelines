@@ -39,7 +39,7 @@ describe('Providers Index', () => {
         it('should have all expected exports', () => {
             const providersModule = require('../../../src/providers');
             const expectedExports = ['InputProvider', 'ConfigProvider'];
-            
+
             expectedExports.forEach(exportName => {
                 expect(providersModule).toHaveProperty(exportName);
                 expect(typeof providersModule[exportName]).toBe('function');
@@ -50,7 +50,7 @@ describe('Providers Index', () => {
             const providersModule = require('../../../src/providers');
             const actualExports = Object.keys(providersModule);
             const expectedExports = ['InputProvider', 'ConfigProvider'];
-            
+
             expect(actualExports.sort()).toEqual(expectedExports.sort());
         });
     });

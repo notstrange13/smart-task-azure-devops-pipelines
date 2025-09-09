@@ -296,7 +296,9 @@ describe('Tool Types', () => {
                 error: 'Validation failed',
             };
 
-            expect(handleToolResult(success)).toBe('processor succeeded with result: {"status":"done"}');
+            expect(handleToolResult(success)).toBe(
+                'processor succeeded with result: {"status":"done"}'
+            );
             expect(handleToolResult(failure)).toBe('Error in validator: Validation failed');
         });
     });

@@ -17,13 +17,33 @@ export class GitClient extends BaseAzureDevOpsClient {
 
     /**
      * Get changes for a specific commit
-     * @param repositoryId - Repository ID
+     * @param repositoryId - Repository ID or name (optional, uses current repository if not provided)
      * @param commitId - Commit ID
      */
-    static async getCommitChanges(repositoryId: string, commitId: string): Promise<any> {
-        return this.makeRequest(
-            `/git/repositories/${repositoryId}/commits/${commitId}/changes?api-version=7.0`
-        );
+    static async getCommitChanges(repositoryId?: string, commitId?: string): Promise<any> {
+        const repoId = repositoryId || this.getRepositoryId();
+        const commit = commitId || this.getSourceVersion();
+
+        // Try with repository ID first, then fall back to repository name if needed
+        try {
+            return await this.makeRequest(
+                `/git/repositories/${repoId}/commits/${commit}/changes?api-version=7.0`
+            );
+        } catch (error) {
+            if (!repositoryId) {
+                // If we used the internal repository ID and it failed, try with repository name as fallback
+                console.log(
+                    `Failed with repository ID ${repoId}, trying with repository name as fallback`
+                );
+                const repoName = this.getRepositoryName();
+                return await this.makeRequest(
+                    `/git/repositories/${repoName}/commits/${commit}/changes?api-version=7.0`
+                );
+            } else {
+                // If a specific repository ID was provided, don't try fallback
+                throw error;
+            }
+        }
     }
 
     /**

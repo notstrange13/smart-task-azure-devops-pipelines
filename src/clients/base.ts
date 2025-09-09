@@ -88,7 +88,30 @@ export abstract class BaseAzureDevOpsClient {
         if (!repositoryId) {
             throw new Error('Build.Repository.ID not available');
         }
+
+        // Extract just the GUID if the repository ID is a full URL
+        // Format might be: https://dev.azure.com/org/_apis/git/repositories/{guid}
+        const guidMatch = repositoryId.match(
+            /([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/i
+        );
+        if (guidMatch) {
+            console.log(`Repository ID extracted from URL: ${guidMatch[1]}`);
+            return guidMatch[1];
+        }
+
+        // If it's already a GUID or other format, return as is
         return repositoryId;
+    }
+
+    /**
+     * Get repository name from pipeline variables as fallback
+     */
+    protected static getRepositoryName(): string {
+        const repositoryName = tl.getVariable('Build.Repository.Name');
+        if (!repositoryName) {
+            throw new Error('Build.Repository.Name not available');
+        }
+        return repositoryName;
     }
 
     /**

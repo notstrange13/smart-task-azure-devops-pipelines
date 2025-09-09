@@ -1,10 +1,10 @@
-import { 
-    TaskMode, 
-    TaskInput, 
-    TaskResult, 
-    TaskConfig, 
+import {
+    TaskMode,
+    TaskInput,
+    TaskResult,
+    TaskConfig,
     TaskContext,
-    ModelConfig 
+    ModelConfig,
 } from '../../../src/types/task';
 import { ModelType } from '../../../src/types/config';
 

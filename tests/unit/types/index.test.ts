@@ -6,15 +6,15 @@ import {
     TaskConfig,
     TaskContext,
     ModelConfig,
-    
+
     // Configuration types
     ModelType,
     AzureOpenAIConfig,
-    
+
     // State and execution types
     PlanExecuteState,
     StateAnnotation,
-    
+
     // Tool-related types
     ToolResult,
 } from '../../../src/types';
@@ -178,16 +178,16 @@ describe('Types Index', () => {
     describe('Module structure', () => {
         it('should have all expected exports', () => {
             const typesModule = require('../../../src/types');
-            
+
             const expectedExports = [
                 // Enums (value exports)
                 'TaskMode',
                 'ModelType',
                 'StateAnnotation',
-                
+
                 // Type exports are not enumerable in runtime, but enums and values are
             ];
-            
+
             expectedExports.forEach(exportName => {
                 expect(typesModule).toHaveProperty(exportName);
             });
@@ -195,7 +195,7 @@ describe('Types Index', () => {
 
         it('should export enums as runtime values', () => {
             const typesModule = require('../../../src/types');
-            
+
             expect(typesModule.TaskMode).toBe(TaskMode);
             expect(typesModule.ModelType).toBe(ModelType);
             expect(typesModule.StateAnnotation).toBe(StateAnnotation);
@@ -204,7 +204,7 @@ describe('Types Index', () => {
         it('should maintain enum consistency across exports', () => {
             expect(Object.keys(TaskMode)).toEqual(['DECISION', 'EXECUTION']);
             expect(Object.values(TaskMode)).toEqual(['decision', 'execution']);
-            
+
             expect(Object.keys(ModelType)).toEqual(['AZURE_OPENAI']);
             expect(Object.values(ModelType)).toEqual(['AZURE_OPENAI']);
         });

@@ -6,7 +6,10 @@ describe('State Types', () => {
             const state: PlanExecuteState = {
                 input: 'Test input',
                 plan: ['step1', 'step2', 'step3'],
-                past_steps: [['action1', 'result1'], ['action2', 'result2']],
+                past_steps: [
+                    ['action1', 'result1'],
+                    ['action2', 'result2'],
+                ],
                 response: 'Test response',
                 context: { key: 'value' },
             };
@@ -71,7 +74,10 @@ describe('State Types', () => {
             };
 
             expect(state.past_steps).toHaveLength(3);
-            expect(state.past_steps[0]).toEqual(['analyze requirements', 'requirements analyzed successfully']);
+            expect(state.past_steps[0]).toEqual([
+                'analyze requirements',
+                'requirements analyzed successfully',
+            ]);
             expect(state.past_steps[1]).toEqual(['execute plan', 'plan executed with warnings']);
             expect(state.past_steps[2]).toEqual(['validate results', 'validation completed']);
         });
@@ -80,10 +86,10 @@ describe('State Types', () => {
             const complexContext = {
                 user: { id: 123, name: 'John', role: 'admin' },
                 project: { id: 'proj-456', name: 'Test Project' },
-                settings: { 
-                    timeout: 30000, 
-                    retries: 3, 
-                    debug: true 
+                settings: {
+                    timeout: 30000,
+                    retries: 3,
+                    debug: true,
                 },
                 metadata: {
                     tags: ['urgent', 'automation'],
@@ -122,7 +128,7 @@ describe('State Types', () => {
             // Test that StateAnnotation can be used in type contexts
             const annotationType = StateAnnotation;
             expect(annotationType).toBeDefined();
-            
+
             // The annotation should be structured for LangGraph usage
             expect(typeof annotationType).toBe('object');
         });
