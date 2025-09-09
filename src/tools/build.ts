@@ -5,6 +5,75 @@ import { GitClient } from '../clients/git';
 import * as tl from 'azure-pipelines-task-lib/task';
 
 /**
+ * Tool for getting Azure DevOps build context information
+ */
+export class GetBuildContextTool extends Tool {
+    name = 'get_build_context';
+    description =
+        'Get comprehensive Azure DevOps build context including source branch, target branch, build reason, repository info, and more. This provides all build-related information in one call.';
+
+    async execute(): Promise<ToolResult> {
+        try {
+            console.log('Getting Azure DevOps build context...');
+
+            const buildContext = {
+                // Branch information
+                sourceBranch: tl.getVariable('Build.SourceBranch') || null,
+                sourceBranchName: tl.getVariable('Build.SourceBranchName') || null,
+                targetBranch: tl.getVariable('System.PullRequest.TargetBranch') || null,
+                targetBranchName: tl.getVariable('System.PullRequest.TargetBranchName') || null,
+
+                // Build information
+                buildReason: tl.getVariable('Build.Reason') || null,
+                buildId: tl.getVariable('Build.BuildId') || null,
+                buildNumber: tl.getVariable('Build.BuildNumber') || null,
+                buildDefinitionName: tl.getVariable('Build.DefinitionName') || null,
+
+                // Repository information
+                repositoryName: tl.getVariable('Build.Repository.Name') || null,
+                repositoryProvider: tl.getVariable('Build.Repository.Provider') || null,
+                repositoryUri: tl.getVariable('Build.Repository.Uri') || null,
+
+                // Pull request information (if applicable)
+                isPullRequest: tl.getVariable('Build.Reason') === 'PullRequest',
+                pullRequestId: tl.getVariable('System.PullRequest.PullRequestId') || null,
+                pullRequestSourceBranch: tl.getVariable('System.PullRequest.SourceBranch') || null,
+
+                // Agent information
+                agentName: tl.getVariable('Agent.Name') || null,
+                agentOS: tl.getVariable('Agent.OS') || null,
+
+                // System information
+                teamProject: tl.getVariable('System.TeamProject') || null,
+                collectionUri: tl.getVariable('System.CollectionUri') || null,
+            };
+
+            console.log('Build context retrieved successfully:');
+            console.log(`- Source Branch: ${buildContext.sourceBranchName}`);
+            console.log(`- Build Reason: ${buildContext.buildReason}`);
+            console.log(`- Is Pull Request: ${buildContext.isPullRequest}`);
+            console.log(`- Repository: ${buildContext.repositoryName}`);
+
+            return {
+                name: this.name,
+                result: buildContext,
+                success: true,
+            };
+        } catch (error) {
+            console.log(
+                `Failed to get build context: ${error instanceof Error ? error.message : String(error)}`
+            );
+            return {
+                name: this.name,
+                result: null,
+                success: false,
+                error: error instanceof Error ? error.message : String(error),
+            };
+        }
+    }
+}
+
+/**
  * Tool for getting changed files in the current build
  */
 export class GetBuildChangesTool extends Tool {
@@ -40,8 +109,9 @@ export class GetBuildChangesTool extends Tool {
             if (changesResponse.value && changesResponse.value.length > 0) {
                 for (const change of changesResponse.value) {
                     try {
+                        console.log(`Getting changes for commit: ${change.id}`);
                         const commitChanges = await GitClient.getCommitChanges(
-                            change.location,
+                            undefined, // Let GitClient resolve the repository ID internally
                             change.id
                         );
                         if (commitChanges.changes) {
@@ -49,6 +119,9 @@ export class GetBuildChangesTool extends Tool {
                                 .map((c: any) => c.item?.path || c.path)
                                 .filter(Boolean);
                             changedFiles.push(...files);
+                            console.log(
+                                `Found ${files.length} changed files in commit ${change.id}`
+                            );
                         }
                     } catch (error) {
                         console.warn(`Failed to get changes for commit ${change.id}:`, error);
@@ -59,9 +132,13 @@ export class GetBuildChangesTool extends Tool {
             // Remove duplicates
             changedFiles = [...new Set(changedFiles)];
 
-            console.log(`Build changes analysis completed: ${changedFiles.length} unique files changed`);
+            console.log(
+                `Build changes analysis completed: ${changedFiles.length} unique files changed`
+            );
             if (changedFiles.length > 0) {
-                console.log(`Sample changed files: ${changedFiles.slice(0, 5).join(', ')}${changedFiles.length > 5 ? '...' : ''}`);
+                console.log(
+                    `Sample changed files: ${changedFiles.slice(0, 5).join(', ')}${changedFiles.length > 5 ? '...' : ''}`
+                );
             }
 
             return {
@@ -76,7 +153,9 @@ export class GetBuildChangesTool extends Tool {
                 success: true,
             };
         } catch (error) {
-            console.log(`Failed to get build changes: ${error instanceof Error ? error.message : String(error)}`);
+            console.log(
+                `Failed to get build changes: ${error instanceof Error ? error.message : String(error)}`
+            );
             return {
                 name: this.name,
                 result: null,

@@ -77,7 +77,7 @@ const childEnv = {
     ADDITIONAL_CONTEXT: additionalContext,
     // Set dummy INPUT_ variables to prevent Azure DevOps task library debug messages
     INPUT_PROMPT: 'dev-mode',
-    INPUT_MODE: 'dev-mode', 
+    INPUT_MODE: 'dev-mode',
     INPUT_ADDITIONALCONTEXT: 'dev-mode',
 };
 

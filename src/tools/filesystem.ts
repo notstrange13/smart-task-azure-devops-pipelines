@@ -2,6 +2,7 @@ import { Tool } from './base';
 import { ToolResult } from '../types';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as tl from 'azure-pipelines-task-lib/task';
 
 /**
  * Tool for reading file contents
@@ -12,22 +13,39 @@ export class ReadFileTool extends Tool {
 
     async execute(filePath: string): Promise<ToolResult> {
         try {
-            const fullPath = path.resolve(filePath);
+            // Get the source directory (where the code is checked out)
+            // This is the working directory for the pipeline, not the task directory
+            const sourceDirectory =
+                tl.getVariable('Build.SourcesDirectory') ||
+                tl.getVariable('System.DefaultWorkingDirectory') ||
+                process.cwd();
+
+            let fullPath: string;
+            if (path.isAbsolute(filePath)) {
+                fullPath = filePath;
+            } else {
+                // Resolve relative paths against the source directory, not the task directory
+                fullPath = path.resolve(sourceDirectory, filePath);
+            }
+
             console.log(`Reading file: ${fullPath}`);
-            
+            console.log(`Source directory: ${sourceDirectory}`);
+
             const content = fs.readFileSync(fullPath, 'utf8');
             const lines = content.split('\n').length;
             const size = Buffer.byteLength(content, 'utf8');
-            
+
             console.log(`File read successfully: ${lines} lines, ${size} bytes`);
-            
+
             return {
                 name: this.name,
                 result: content,
                 success: true,
             };
         } catch (error) {
-            console.log(`Failed to read file: ${filePath} - ${error instanceof Error ? error.message : String(error)}`);
+            console.log(
+                `Failed to read file: ${filePath} - ${error instanceof Error ? error.message : String(error)}`
+            );
             return {
                 name: this.name,
                 result: null,
@@ -52,10 +70,24 @@ export class WriteFileTool extends Tool {
                 throw new Error('filePath and content are required');
             }
 
-            const fullPath = path.resolve(filePath);
+            // Get the source directory (where the code is checked out)
+            const sourceDirectory =
+                tl.getVariable('Build.SourcesDirectory') ||
+                tl.getVariable('System.DefaultWorkingDirectory') ||
+                process.cwd();
+
+            let fullPath: string;
+            if (path.isAbsolute(filePath)) {
+                fullPath = filePath;
+            } else {
+                // Resolve relative paths against the source directory, not the task directory
+                fullPath = path.resolve(sourceDirectory, filePath);
+            }
+
             const dirPath = path.dirname(fullPath);
-            
+
             console.log(`Writing file: ${fullPath}`);
+            console.log(`Source directory: ${sourceDirectory}`);
 
             // Create directory if it doesn't exist
             if (!fs.existsSync(dirPath)) {
@@ -64,7 +96,7 @@ export class WriteFileTool extends Tool {
             }
 
             fs.writeFileSync(fullPath, content, 'utf8');
-            
+
             const size = Buffer.byteLength(content, 'utf8');
             const lines = content.split('\n').length;
             console.log(`File written successfully: ${lines} lines, ${size} bytes`);
@@ -75,7 +107,9 @@ export class WriteFileTool extends Tool {
                 success: true,
             };
         } catch (error) {
-            console.log(`Failed to write file: ${error instanceof Error ? error.message : String(error)}`);
+            console.log(
+                `Failed to write file: ${error instanceof Error ? error.message : String(error)}`
+            );
             return {
                 name: this.name,
                 result: null,
@@ -95,9 +129,22 @@ export class ListDirectoryTool extends Tool {
 
     async execute(dirPath: string): Promise<ToolResult> {
         try {
-            const fullPath = path.resolve(dirPath);
-            
+            // Get the source directory (where the code is checked out)
+            const sourceDirectory =
+                tl.getVariable('Build.SourcesDirectory') ||
+                tl.getVariable('System.DefaultWorkingDirectory') ||
+                process.cwd();
+
+            let fullPath: string;
+            if (path.isAbsolute(dirPath)) {
+                fullPath = dirPath;
+            } else {
+                // Resolve relative paths against the source directory, not the task directory
+                fullPath = path.resolve(sourceDirectory, dirPath);
+            }
+
             console.log(`Listing directory: ${fullPath}`);
+            console.log(`Source directory: ${sourceDirectory}`);
 
             if (!fs.existsSync(fullPath)) {
                 console.log(`Directory does not exist: ${fullPath}`);
@@ -132,7 +179,9 @@ export class ListDirectoryTool extends Tool {
             });
 
             console.log(`Directory listing completed: ${fileDetails.length} items found`);
-            console.log(`Files: ${fileDetails.filter(f => f.type === 'file').length}, Directories: ${fileDetails.filter(f => f.type === 'directory').length}`);
+            console.log(
+                `Files: ${fileDetails.filter(f => f.type === 'file').length}, Directories: ${fileDetails.filter(f => f.type === 'directory').length}`
+            );
 
             return {
                 name: this.name,
@@ -140,7 +189,9 @@ export class ListDirectoryTool extends Tool {
                 success: true,
             };
         } catch (error) {
-            console.log(`Failed to list directory: ${dirPath} - ${error instanceof Error ? error.message : String(error)}`);
+            console.log(
+                `Failed to list directory: ${dirPath} - ${error instanceof Error ? error.message : String(error)}`
+            );
             return {
                 name: this.name,
                 result: null,

@@ -22,6 +22,23 @@ export class TaskExecutor {
         try {
             console.log('Smart Task starting...');
 
+            // Log environment information for debugging
+            console.log('=== Environment Debug Information ===');
+            console.log(`Current working directory: ${process.cwd()}`);
+            console.log(
+                `Build.SourcesDirectory: ${tl.getVariable('Build.SourcesDirectory') || 'undefined'}`
+            );
+            console.log(
+                `System.DefaultWorkingDirectory: ${tl.getVariable('System.DefaultWorkingDirectory') || 'undefined'}`
+            );
+            console.log(
+                `Build.Repository.LocalPath: ${tl.getVariable('Build.Repository.LocalPath') || 'undefined'}`
+            );
+            console.log(
+                `Agent.BuildDirectory: ${tl.getVariable('Agent.BuildDirectory') || 'undefined'}`
+            );
+            console.log('=====================================');
+
             // Get and validate all inputs
             const { prompt, mode, additionalContext } = this.inputProvider.getTaskInputs();
             console.log(`Smart Task starting in ${mode} mode...`);

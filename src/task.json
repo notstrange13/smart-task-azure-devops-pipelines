@@ -3,7 +3,7 @@
   "id": "74cbe7c3-c454-4c3a-97d0-7c04e5fc77a0",
   "name": "SmartTask",
   "friendlyName": "Smart Task",
-  "description": "Intelligent task that makes pipelines contextually aware and dynamic using AI",
+  "description": "Intelligent task that makes pipelines contextually aware and dynamic using AI.",
   "helpMarkDown": "Brings AI-powered contextual awareness, dynamic decision-making and execution to Azure DevOps pipelines.",
   "category": "Utility",
   "author": "Pratik Panda",
@@ -44,7 +44,7 @@
     }
   ],
   "execution": {
-    "Node16": {
+    "Node20_1": {
       "target": "index.js",
       "workingDirectory": "$(currentDirectory)"
     }

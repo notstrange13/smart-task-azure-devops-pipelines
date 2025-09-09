@@ -1,12 +1,12 @@
 {
-  "name": "smart-task-azure-devops-pipelines",
+  "name": "smart-task",
   "version": "1.0.0",
-  "description": "Intelligent Azure DevOps Pipeline task with contextual awareness and dynamic execution",
+  "description": "Intelligent Azure DevOps Pipeline task with contextual awareness and dynamic execution.",
   "main": "dist/index.js",
   "scripts": {
-    "build": "tsc && npm run copy-task",
-    "copy-task": "node -e \"require('fs').copyFileSync('src/task.json', 'dist/task.json')\"",
-    "build:watch": "tsc --watch",
+    "build": "webpack --mode=production",
+    "build:dev": "webpack --mode=development",
+    "build:watch": "webpack --mode=development --watch",
     "dev": "npm run build && node scripts/dev-test.js",
     "test": "jest",
     "test:watch": "jest --watch",
@@ -43,12 +43,20 @@
     "@types/uuid": "^10.0.0",
     "@typescript-eslint/eslint-plugin": "^8.39.1",
     "@typescript-eslint/parser": "^8.39.1",
+    "buffer": "^6.0.3",
+    "copy-webpack-plugin": "^13.0.1",
     "eslint": "^9.33.0",
     "jest": "^30.0.5",
     "prettier": "^3.6.2",
+    "process": "^0.11.10",
     "rimraf": "^6.0.1",
+    "stream-browserify": "^3.0.0",
     "tfx-cli": "^0.21.3",
     "ts-jest": "^29.4.1",
-    "typescript": "^5.9.2"
+    "ts-loader": "^9.5.4",
+    "typescript": "^5.9.2",
+    "util": "^0.12.5",
+    "webpack": "^5.101.3",
+    "webpack-cli": "^6.0.1"
   }
 }
