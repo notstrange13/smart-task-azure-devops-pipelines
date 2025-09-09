@@ -112,12 +112,12 @@ npm run package
   inputs:
     prompt: |
       Analyze the current build and deployment context:
-      
+
       1. Check if this is a production deployment
       2. Verify all tests have passed
       3. Determine the appropriate deployment strategy
       4. Execute deployment commands if conditions are met
-      
+
       For production: Use blue-green deployment
       For staging: Use rolling deployment
       For development: Use direct deployment
@@ -137,13 +137,13 @@ npm run package
   inputs:
     prompt: |
       Determine security scanning strategy based on code changes and deployment context:
-      
+
       1. Analyze recent code changes to identify security-relevant modifications
       2. Check if dependencies have been updated or added
       3. Evaluate authentication/authorization code changes
       4. Consider the target deployment environment and compliance requirements
       5. Set appropriate scanning variables: SECURITY_SCAN_TYPE, SCAN_SCOPE, COMPLIANCE_CHECK
-      
+
       Optimize scanning time while ensuring adequate security coverage.
     mode: 'decision'
     additionalContext: |
@@ -177,9 +177,9 @@ npm run package
 
 Set these as Azure DevOps pipeline variables or in a variable group:
 
-| Variable                       | Description                     | Required | Example                    |
-| ------------------------------ | ------------------------------- | -------- | -------------------------- |
-| `MODEL_TYPE`                   | AI model type                  | Yes      | `AZURE_OPENAI`            |
+| Variable                       | Description                     | Required | Example                   |
+| ------------------------------ | ------------------------------- | -------- | ------------------------- |
+| `MODEL_TYPE`                   | AI model type                   | Yes      | `AZURE_OPENAI`            |
 | `AZURE_OPENAI_INSTANCE_NAME`   | Your Azure OpenAI instance name | Yes      | `my-openai-instance`      |
 | `AZURE_OPENAI_KEY`             | API key for authentication      | Yes      | `$(AZURE_OPENAI_API_KEY)` |
 | `AZURE_OPENAI_DEPLOYMENT_NAME` | Model deployment name           | Yes      | `gpt-4o`                  |
@@ -190,8 +190,9 @@ Set these as Azure DevOps pipeline variables or in a variable group:
 Smart Task supports two execution modes:
 
 #### Decision Mode (`mode: 'decision'`)
+
 - **Purpose**: Analyze context and set pipeline variables for conditional execution
-- **Use Cases**: 
+- **Use Cases**:
   - Intelligent test strategy decisions
   - Environment-specific deployment choices
   - Security scanning optimization
@@ -200,10 +201,11 @@ Smart Task supports two execution modes:
 - **Example Variables**: `RUN_UNIT_TESTS`, `DEPLOYMENT_STRATEGY`, `SECURITY_LEVEL`
 
 #### Execution Mode (`mode: 'execution'`)
+
 - **Purpose**: Execute commands and perform actions based on AI analysis
 - **Use Cases**:
   - Automated deployments
-  - Dynamic script execution  
+  - Dynamic script execution
   - File operations
   - API calls and integrations
 - **Output**: Executes commands and reports results
@@ -213,14 +215,14 @@ Smart Task supports two execution modes:
 
 Smart Task includes 18+ specialized tools for comprehensive pipeline automation:
 
-| Category | Tools | Description |
-|----------|-------|-------------|
-| **File System** | `read_file`, `write_file`, `list_directory` | File and directory operations |
-| **Git Operations** | `get_commit_changes`, `get_repository_info` | Git repository analysis |
-| **Pipeline Context** | `get_pipeline_variables`, `set_pipeline_variable` | Azure DevOps pipeline integration |
-| **Build Tools** | `execute_command`, `run_tests`, `build_application` | Build and test execution |
-| **Notifications** | `send_notification`, `create_work_item` | Team communication |
-| **Environment** | `check_environment`, `validate_configuration` | Environment validation |
+| Category             | Tools                                               | Description                       |
+| -------------------- | --------------------------------------------------- | --------------------------------- |
+| **File System**      | `read_file`, `write_file`, `list_directory`         | File and directory operations     |
+| **Git Operations**   | `get_commit_changes`, `get_repository_info`         | Git repository analysis           |
+| **Pipeline Context** | `get_pipeline_variables`, `set_pipeline_variable`   | Azure DevOps pipeline integration |
+| **Build Tools**      | `execute_command`, `run_tests`, `build_application` | Build and test execution          |
+| **Notifications**    | `send_notification`, `create_work_item`             | Team communication                |
+| **Environment**      | `check_environment`, `validate_configuration`       | Environment validation            |
 
 ### Best Practices
 
