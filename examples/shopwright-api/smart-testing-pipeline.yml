@@ -1,0 +1,167 @@
+# ShopWright API - Smart Task Demo Pipeline
+#
+# This pipeline demonstrates how Smart Task AI analyzes the ShopWright e-commerce
+# platform and makes intelligent decisions about which tests to run based on code changes.
+
+trigger:
+    branches:
+        include:
+            - main
+            - develop
+            - feature/*
+
+variables:
+    - group: ShopwrightAPI
+
+pool:
+    vmImage: 'ubuntu-latest'
+
+stages:
+    - stage: IntelligentTestStrategy
+      displayName: 'AI-Driven Test Strategy Decision'
+      jobs:
+          - job: AnalyzeAndDecide
+            displayName: 'Analyze Code Changes and Decide Test Strategy'
+            steps:
+                - checkout: self
+                  displayName: 'Checkout Source Code'
+
+                - task: SmartTask@1
+                  name: SmartDecision
+                  displayName: 'AI Decision: Intelligent Test Strategy'
+                  env:
+                      MODEL_TYPE: $(MODEL_TYPE)
+                      AZURE_OPENAI_INSTANCE_NAME: $(AZURE_OPENAI_INSTANCE_NAME)
+                      AZURE_OPENAI_KEY: $(AZURE_OPENAI_KEY)
+                      AZURE_OPENAI_DEPLOYMENT_NAME: $(AZURE_OPENAI_DEPLOYMENT_NAME)
+                      AZURE_OPENAI_API_VERSION: $(AZURE_OPENAI_API_VERSION)
+                  inputs:
+                      prompt: |
+                          Analyze this repository and the current build context to make intelligent testing decisions:
+
+                          1. **Analyze the codebase structure:**
+                             - Examine package.json to understand the project type and dependencies
+                             - Determine if this is a frontend, backend, or full-stack project
+                             - Identify testing frameworks and scripts available
+
+                          2. **Analyze the build context:**
+                             - Check the source branch to understand the type of changes (feature, hotfix, main/master)
+                             - Consider the build trigger reason (manual, pull request, scheduled, etc.)
+                             - Evaluate the scope and risk level of changes
+
+                          3. **Make intelligent testing decisions:**
+                             - For main/master branch: Run comprehensive test suite for maximum confidence
+                             - For feature branches: Run targeted tests based on likely impact areas
+                             - For hotfix branches: Focus on critical path testing for fast feedback
+                             - For dependency updates: Emphasize integration and compatibility tests
+
+                          4. **Set pipeline variables for the test execution strategy:**
+                             - RUN_UNIT_TESTS: true/false
+                             - RUN_INTEGRATION_TESTS: true/false
+                             - RUN_E2E_TESTS: true/false
+                             - TEST_SCOPE: 'minimal' | 'standard' | 'comprehensive'
+                             - TEST_REASON: clear explanation of the testing strategy decision
+
+                          Make data-driven decisions to optimize test execution time while maintaining appropriate quality gates.
+
+                      mode: 'decision'
+                      additionalContext: |
+                          {
+                            "project_context": {
+                              "type": "web_application",
+                              "environments": ["development", "staging", "production"],
+                              "test_types": ["unit", "integration", "e2e", "performance"]
+                            },
+                            "decision_criteria": {
+                              "main_branch": "comprehensive testing required",
+                              "feature_branch": "targeted testing based on changes",
+                              "hotfix_branch": "critical path testing only",
+                              "scheduled_build": "full regression testing"
+                            }
+                          }
+
+                - task: PowerShell@2
+                  name: SetOutputVars
+                  displayName: 'Display AI Test Strategy Decisions'
+                  inputs:
+                      targetType: 'inline'
+                      script: |
+                          Write-Host "=== AI Test Strategy Decisions ==="
+                          Write-Host "Source Branch: $(Build.SourceBranchName)"
+                          Write-Host "Build Reason: $(Build.Reason)"
+                          Write-Host ""
+                          Write-Host "=== AI Recommendations ==="
+                          Write-Host "Run Unit Tests: $(RUN_UNIT_TESTS)"
+                          Write-Host "Run Integration Tests: $(RUN_INTEGRATION_TESTS)"
+                          Write-Host "Run E2E Tests: $(RUN_E2E_TESTS)"
+                          Write-Host "Test Scope: $(TEST_SCOPE)"
+                          Write-Host "Decision Reason: $(TEST_REASON)"
+                          Write-Host ""
+                          Write-Host "=== Setting Job Output Variables ==="
+                          Write-Host "##vso[task.setvariable variable=RUN_UNIT_TESTS;isOutput=true]$(RUN_UNIT_TESTS)"
+                          Write-Host "##vso[task.setvariable variable=RUN_INTEGRATION_TESTS;isOutput=true]$(RUN_INTEGRATION_TESTS)"
+                          Write-Host "##vso[task.setvariable variable=RUN_E2E_TESTS;isOutput=true]$(RUN_E2E_TESTS)"
+                          Write-Host "##vso[task.setvariable variable=TEST_SCOPE;isOutput=true]$(TEST_SCOPE)"
+                          Write-Host "##vso[task.setvariable variable=TEST_REASON;isOutput=true]$(TEST_REASON)"
+
+    - stage: ExecuteTests
+      displayName: 'Execute AI-Recommended Tests'
+      dependsOn: IntelligentTestStrategy
+      condition: succeeded()
+      variables:
+          RUN_UNIT_TESTS: $[ stageDependencies.IntelligentTestStrategy.AnalyzeAndDecide.outputs['SetOutputVars.RUN_UNIT_TESTS'] ]
+          RUN_INTEGRATION_TESTS: $[ stageDependencies.IntelligentTestStrategy.AnalyzeAndDecide.outputs['SetOutputVars.RUN_INTEGRATION_TESTS'] ]
+          RUN_E2E_TESTS: $[ stageDependencies.IntelligentTestStrategy.AnalyzeAndDecide.outputs['SetOutputVars.RUN_E2E_TESTS'] ]
+          TEST_SCOPE: $[ stageDependencies.IntelligentTestStrategy.AnalyzeAndDecide.outputs['SetOutputVars.TEST_SCOPE'] ]
+          TEST_REASON: $[ stageDependencies.IntelligentTestStrategy.AnalyzeAndDecide.outputs['SetOutputVars.TEST_REASON'] ]
+      jobs:
+          - job: UnitTests
+            displayName: 'Unit Tests'
+            condition: eq(variables['RUN_UNIT_TESTS'], 'true')
+            steps:
+                - task: PowerShell@2
+                  displayName: 'Execute Unit Tests'
+                  inputs:
+                      targetType: 'inline'
+                      script: |
+                          Write-Host "=== Unit Test Execution ===" -ForegroundColor Green
+                          Write-Host "AI Decision: Unit tests enabled for this build"
+                          Write-Host "Test Scope: $(TEST_SCOPE)"
+                          Write-Host "Reasoning: $(TEST_REASON)"
+                          Write-Host ""
+                          Write-Host "Running unit tests..."
+                          Write-Host "Note: In a real implementation, this would execute: npm run test:unit"
+
+          - job: IntegrationTests
+            displayName: 'Integration Tests'
+            condition: eq(variables['RUN_INTEGRATION_TESTS'], 'true')
+            steps:
+                - task: PowerShell@2
+                  displayName: 'Execute Integration Tests'
+                  inputs:
+                      targetType: 'inline'
+                      script: |
+                          Write-Host "=== Integration Test Execution ===" -ForegroundColor Blue
+                          Write-Host "AI Decision: Integration tests enabled for this build"
+                          Write-Host "Test Scope: $(TEST_SCOPE)"
+                          Write-Host "Reasoning: $(TEST_REASON)"
+                          Write-Host ""
+                          Write-Host "Running integration tests..."
+                          Write-Host "Note: In a real implementation, this would execute: npm run test:integration"
+
+          - job: E2ETests
+            displayName: 'End-to-End Tests'
+            condition: eq(variables['RUN_E2E_TESTS'], 'true')
+            steps:
+                - task: PowerShell@2
+                  displayName: 'Execute E2E Tests'
+                  inputs:
+                      targetType: 'inline'
+                      script: |
+                          Write-Host "=== End-to-End Test Execution ===" -ForegroundColor Magenta
+                          Write-Host "AI Decision: E2E tests enabled for this build"
+                          Write-Host "Test Scope: $(TEST_SCOPE)"
+                          Write-Host "Reasoning: $(TEST_REASON)"
+                          Write-Host ""
+                          Write-Host "Running end-to-end tests..."
+                          Write-Host "Note: In a real implementation, this would execute: npm run test:e2e"
